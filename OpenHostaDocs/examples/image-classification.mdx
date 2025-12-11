@@ -1,0 +1,653 @@
+---
+title: "Image Classification"
+description: "Process and classify images using multimodal LLMs with OpenHosta"
+icon: "image"
+---
+
+## Overview
+
+OpenHosta supports image inputs through multimodal LLMs, enabling you to classify, analyze, and extract information from images. Images can be passed as function arguments alongside text parameters.
+
+<Info>
+Image support requires a multimodal model like GPT-4 Vision, Claude 3, or Gemini. Local models like LLaVA also work with Ollama.
+</Info>
+
+## Basic Image Classification
+
+### Document Type Classification
+
+Classify documents based on their visual appearance:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+from PIL.Image import Image, open
+
+class DocumentType(Enum):
+    OLD_BOOK = "old_book"
+    ARTICLE = "article"
+    REPORT = "report"
+    THESIS = "thesis"
+    MANUSCRIPT = "manuscript"
+
+def classify_document(page: Image) -> DocumentType:
+    """
+    Classify the document type based on the page layout and style.
+
+    Args:
+        page: An image of the document page to classify
+
+    Returns:
+        The type of document detected
+    """
+    return emulate()
+
+# Load an image
+import requests
+url = "https://example.com/document-page.png"
+img = open(requests.get(url, stream=True).raw)
+
+result = classify_document(img)
+print(f"Document type: {result.value}")
+# Document type: old_book
+```
+
+### Image Category Classification
+
+Classify images into general categories:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+from PIL import Image
+
+class ImageCategory(Enum):
+    NATURE = "nature"
+    URBAN = "urban"
+    PEOPLE = "people"
+    FOOD = "food"
+    ANIMALS = "animals"
+    TECHNOLOGY = "technology"
+    ART = "art"
+    OTHER = "other"
+
+def classify_image(image: Image.Image) -> ImageCategory:
+    """
+    Classify an image into a general category.
+
+    Args:
+        image: The image to classify
+
+    Returns:
+        The category that best describes the image
+    """
+    return emulate()
+
+# Load and classify
+img = Image.open("photo.jpg")
+category = classify_image(img)
+print(f"Category: {category.value}")
+```
+
+## Advanced Image Analysis
+
+### Detailed Image Description
+
+Generate comprehensive image descriptions:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, Field
+from PIL import Image
+from typing import List
+
+class ImageDescription(BaseModel):
+    main_subject: str = Field(description="Primary subject of the image")
+    setting: str = Field(description="Location or environment")
+    colors: List[str] = Field(description="Dominant colors")
+    mood: str = Field(description="Overall mood or atmosphere")
+    details: List[str] = Field(description="Notable details or objects")
+
+def describe_image(image: Image.Image) -> ImageDescription:
+    """
+    Generate a detailed description of the image.
+
+    Args:
+        image: Image to analyze
+
+    Returns:
+        Comprehensive description including subject, setting, colors, and details
+    """
+    return emulate()
+
+img = Image.open("landscape.jpg")
+description = describe_image(img)
+
+print(f"Subject: {description.main_subject}")
+print(f"Setting: {description.setting}")
+print(f"Colors: {', '.join(description.colors)}")
+print(f"Mood: {description.mood}")
+print("Details:")
+for detail in description.details:
+    print(f"  - {detail}")
+
+# Subject: Mountain range at sunset
+# Setting: Outdoor wilderness, high altitude
+# Colors: orange, purple, pink, blue
+# Mood: Peaceful and majestic
+# Details:
+#   - Snow-capped peaks
+#   - Clouds illuminated by setting sun
+#   - Forest in the foreground
+```
+
+### Object Detection
+
+Identify and count objects in images:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from PIL import Image
+from typing import List, Dict
+
+class DetectedObject(BaseModel):
+    name: str
+    count: int
+    confidence: float
+
+def detect_objects(image: Image.Image) -> List[DetectedObject]:
+    """
+    Detect and count objects in the image.
+
+    Args:
+        image: Image to analyze
+
+    Returns:
+        List of detected objects with counts and confidence scores
+    """
+    return emulate()
+
+img = Image.open("street_scene.jpg")
+objects = detect_objects(img)
+
+for obj in objects:
+    print(f"{obj.name}: {obj.count} (confidence: {obj.confidence:.2f})")
+
+# car: 5 (confidence: 0.95)
+# person: 8 (confidence: 0.92)
+# traffic light: 2 (confidence: 0.88)
+# tree: 12 (confidence: 0.85)
+```
+
+## OCR and Text Extraction
+
+### Extract Text from Images
+
+Read text from images (OCR):
+
+```python
+from OpenHosta import emulate
+from PIL import Image
+
+def extract_text(image: Image.Image) -> str:
+    """
+    Extract all readable text from the image.
+
+    Args:
+        image: Image containing text
+
+    Returns:
+        Extracted text as a single string
+    """
+    return emulate()
+
+# Extract text from a screenshot or scanned document
+img = Image.open("receipt.jpg")
+text = extract_text(img)
+print(text)
+
+# GROCERY STORE
+# Date: 2024-01-15
+# Items:
+# Milk - $3.99
+# Bread - $2.50
+# Eggs - $4.25
+# Total: $10.74
+```
+
+### Structured Data from Images
+
+Extract structured data from documents:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from PIL import Image
+from typing import List
+from datetime import date
+
+class ReceiptItem(BaseModel):
+    name: str
+    price: float
+
+class Receipt(BaseModel):
+    store_name: str
+    date: date
+    items: List[ReceiptItem]
+    total: float
+
+def parse_receipt(image: Image.Image) -> Receipt:
+    """
+    Extract structured data from a receipt image.
+
+    Args:
+        image: Image of a receipt
+
+    Returns:
+        Structured receipt data with items and total
+    """
+    return emulate()
+
+img = Image.open("receipt.jpg")
+receipt = parse_receipt(img)
+
+print(f"Store: {receipt.store_name}")
+print(f"Date: {receipt.date}")
+print("\nItems:")
+for item in receipt.items:
+    print(f"  {item.name}: ${item.price:.2f}")
+print(f"\nTotal: ${receipt.total:.2f}")
+
+# Store: GROCERY STORE
+# Date: 2024-01-15
+#
+# Items:
+#   Milk: $3.99
+#   Bread: $2.50
+#   Eggs: $4.25
+#
+# Total: $10.74
+```
+
+## Image Quality Assessment
+
+### Detect Image Issues
+
+Identify quality problems in images:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from PIL import Image
+from typing import List
+
+class ImageQuality(BaseModel):
+    is_blurry: bool
+    is_dark: bool
+    is_overexposed: bool
+    issues: List[str]
+    quality_score: float  # 0-10
+
+def assess_image_quality(image: Image.Image) -> ImageQuality:
+    """
+    Assess the technical quality of an image.
+
+    Args:
+        image: Image to assess
+
+    Returns:
+        Quality assessment with scores and identified issues
+    """
+    return emulate()
+
+img = Image.open("photo.jpg")
+quality = assess_image_quality(img)
+
+print(f"Quality Score: {quality.quality_score}/10")
+print(f"Blurry: {'Yes' if quality.is_blurry else 'No'}")
+print(f"Dark: {'Yes' if quality.is_dark else 'No'}")
+print(f"Overexposed: {'Yes' if quality.is_overexposed else 'No'}")
+
+if quality.issues:
+    print("\nIssues detected:")
+    for issue in quality.issues:
+        print(f"  - {issue}")
+```
+
+## Content Moderation
+
+### Image Safety Classification
+
+Classify image content for safety:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+from pydantic import BaseModel
+from PIL import Image
+from typing import Optional
+
+class SafetyRating(Enum):
+    SAFE = "safe"
+    QUESTIONABLE = "questionable"
+    UNSAFE = "unsafe"
+
+class SafetyCategory(Enum):
+    VIOLENCE = "violence"
+    ADULT = "adult"
+    DISTURBING = "disturbing"
+    SAFE = "safe"
+
+class ImageSafety(BaseModel):
+    rating: SafetyRating
+    category: SafetyCategory
+    reason: Optional[str]
+
+def check_image_safety(image: Image.Image) -> ImageSafety:
+    """
+    Check if an image is safe for general audiences.
+
+    Args:
+        image: Image to check
+
+    Returns:
+        Safety rating with category and reason
+    """
+    return emulate()
+
+img = Image.open("user_upload.jpg")
+safety = check_image_safety(img)
+
+print(f"Rating: {safety.rating.value}")
+print(f"Category: {safety.category.value}")
+if safety.reason:
+    print(f"Reason: {safety.reason}")
+
+# Rating: safe
+# Category: safe
+```
+
+## Batch Image Processing
+
+Process multiple images efficiently:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from PIL import Image
+from enum import Enum
+from typing import List
+from pathlib import Path
+
+class ImageCategory(Enum):
+    LANDSCAPE = "landscape"
+    PORTRAIT = "portrait"
+    FOOD = "food"
+    ARCHITECTURE = "architecture"
+    OTHER = "other"
+
+async def classify_image(image: Image.Image) -> ImageCategory:
+    """Classify an image into a category."""
+    return await emulate()
+
+async def classify_batch(image_paths: List[Path]) -> List[tuple[Path, ImageCategory]]:
+    """Classify multiple images in parallel."""
+    images = [Image.open(path) for path in image_paths]
+
+    # Process all images in parallel
+    tasks = [classify_image(img) for img in images]
+    categories = await asyncio.gather(*tasks)
+
+    return list(zip(image_paths, categories))
+
+# Process a folder of images
+image_paths = list(Path("photos").glob("*.jpg"))
+results = asyncio.run(classify_batch(image_paths))
+
+for path, category in results:
+    print(f"{path.name}: {category.value}")
+
+# IMG_001.jpg: landscape
+# IMG_002.jpg: portrait
+# IMG_003.jpg: food
+```
+
+## Image + Text Analysis
+
+Combine image and text inputs:
+
+```python
+from OpenHosta import emulate
+from PIL import Image
+
+def verify_product_match(
+    image: Image.Image,
+    description: str
+) -> bool:
+    """
+    Check if the image matches the product description.
+
+    Args:
+        image: Product image
+        description: Text description of the product
+
+    Returns:
+        True if image matches description, False otherwise
+    """
+    return emulate()
+
+img = Image.open("product.jpg")
+description = "Red leather handbag with gold hardware"
+
+matches = verify_product_match(img, description)
+print(f"Image matches description: {matches}")
+
+# Image matches description: True
+
+def caption_image(image: Image.Image, style: str = "descriptive") -> str:
+    """
+    Generate a caption for the image.
+
+    Args:
+        image: Image to caption
+        style: Caption style (descriptive, creative, technical)
+
+    Returns:
+        Generated caption
+    """
+    return emulate()
+
+img = Image.open("sunset.jpg")
+
+descriptive = caption_image(img, "descriptive")
+print(f"Descriptive: {descriptive}")
+# A vibrant sunset over the ocean with orange and pink hues
+
+creative = caption_image(img, "creative")
+print(f"Creative: {creative}")
+# Nature's canvas painted with fire as day surrenders to night
+```
+
+## Medical Image Analysis
+
+<Warning>
+Medical applications require validation and should not be used for actual diagnosis without proper medical oversight and regulatory compliance.
+</Warning>
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from PIL import Image
+from typing import List
+
+class ImageFindings(BaseModel):
+    observations: List[str]
+    areas_of_interest: List[str]
+    recommendations: str
+
+def analyze_medical_image(
+    image: Image.Image,
+    modality: str
+) -> ImageFindings:
+    """
+    Analyze a medical image for educational or research purposes only.
+
+    Args:
+        image: Medical image (X-ray, CT, MRI, etc.)
+        modality: Type of medical imaging (e.g., "X-ray", "CT", "MRI")
+
+    Returns:
+        Educational analysis of the image
+
+    WARNING: For educational purposes only. Not for clinical diagnosis.
+    """
+    return emulate()
+```
+
+## Loading Images from Different Sources
+
+### From URL
+
+```python
+from PIL import Image
+import requests
+from io import BytesIO
+
+def load_image_from_url(url: str) -> Image.Image:
+    """Load an image from a URL."""
+    response = requests.get(url, stream=True)
+    return Image.open(response.raw)
+
+img = load_image_from_url("https://example.com/image.jpg")
+```
+
+### From Base64
+
+```python
+from PIL import Image
+import base64
+from io import BytesIO
+
+def load_image_from_base64(base64_string: str) -> Image.Image:
+    """Load an image from base64 string."""
+    image_data = base64.b64decode(base64_string)
+    return Image.open(BytesIO(image_data))
+```
+
+### From File Path
+
+```python
+from PIL import Image
+from pathlib import Path
+
+# Simple path
+img = Image.open("photo.jpg")
+
+# Using pathlib
+img = Image.open(Path("images") / "photo.jpg")
+```
+
+## Model Requirements
+
+<Info>
+Not all models support image inputs. Ensure your configured model is multimodal.
+</Info>
+
+### Supported Models
+
+<Info>
+**Multimodal Models Supported:**
+
+- **👁️ OpenAI GPT-4 Vision** - GPT-4o, GPT-4-turbo with vision
+- **🧠 Anthropic Claude 3** - Claude 3 Opus, Sonnet, Haiku
+- **✨ Google Gemini** - Gemini Pro Vision, Gemini 1.5
+- **🖥️ Local Models** - LLaVA, Bakllava (via Ollama)
+</Info>
+
+### Configuration Example
+
+```python
+from OpenHosta import OpenAICompatibleModel, config
+
+# OpenAI GPT-4 Vision
+vision_model = OpenAICompatibleModel(
+    model_name="gpt-4o",
+    base_url="https://api.openai.com/v1",
+    api_key="your-api-key"
+)
+
+config.DefaultModel = vision_model
+
+# Or use local LLaVA with Ollama
+# ollama pull llava
+from OpenHosta import OpenAICompatibleModel, config
+
+llava_model = OpenAICompatibleModel(
+    model_name="llava",
+    base_url="http://localhost:11434/v1",
+    api_key="none"
+)
+
+config.DefaultModel = llava_model
+```
+
+## Best Practices
+
+<Tip>
+**Image Processing Best Practices:**
+
+- **📐 Image Size** - Resize large images to reduce costs and improve speed
+- **🎯 Clear Instructions** - Be specific about what to look for in the image
+- **🖼️ Format Matters** - Use common formats: JPEG, PNG, WebP
+- **📚 Batch Processing** - Use async for processing multiple images
+</Tip>
+
+### Image Preprocessing
+
+```python
+from PIL import Image
+
+def prepare_image(image_path: str, max_size: int = 1024) -> Image.Image:
+    """
+    Load and prepare an image for processing.
+
+    Args:
+        image_path: Path to image file
+        max_size: Maximum dimension size
+
+    Returns:
+        Prepared image
+    """
+    img = Image.open(image_path)
+
+    # Convert to RGB if necessary
+    if img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # Resize if too large
+    if max(img.size) > max_size:
+        img.thumbnail((max_size, max_size), Image.Resampling.LANCZOS)
+
+    return img
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Data Extraction" icon="database" href="/OpenHostaDocs/examples/data-extraction">
+    Extract structured data from text and images
+  </Card>
+
+  <Card title="Text Processing" icon="file-lines" href="/OpenHostaDocs/examples/text-processing">
+    Combine with text processing examples
+  </Card>
+
+  <Card title="Custom Models" icon="sliders" href="/OpenHostaDocs/advanced/custom-models">
+    Configure multimodal models
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Process images efficiently with async
+  </Card>
+</CardGroup>

@@ -1,97 +1,174 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Welcome to OpenHosta"
+description: "AI-powered Python extension for semantic function emulation"
 ---
 
-## Setting up
+## What is OpenHosta?
 
-Get your documentation site up and running in minutes.
+OpenHosta is a powerful Python extension that seamlessly integrates Large Language Models (LLMs) into your development workflow, enabling **AI-powered function emulation** while maintaining native Python syntax and paradigms.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
+<Note>
+**The future of development is human** - OpenHosta bridges the gap between human intent and code execution.
+</Note>
+
+## Quick Example
+
+Write functions in natural language and let AI implement them:
+
+```python
+from OpenHosta import emulate
+
+def translate(text: str, language: str) -> str:
+    """
+    This function translates the text into the specified language.
+    """
+    return emulate()
+
+result = translate("Hello World!", "French")
+print(result)
+# Output: Bonjour le monde !
+```
+
+## Key Features
+
+<Note>
+**✨ Natural Language Functions**
+
+Write function docstrings in plain language and let AI implement them. No complex prompting required - just describe what you want in your docstring.
+</Note>
+
+<Tip>
+**🛡️ Type Safety**
+
+Full support for Python types, dataclasses, Pydantic models, and enums. OpenHosta automatically validates and converts outputs to match your type annotations.
+</Tip>
+
+<Check>
+**📡 Offline & Online**
+
+Run with local models (Ollama) or cloud APIs (OpenAI, Anthropic, etc.). Choose between privacy with local models or power with cloud APIs.
+</Check>
+
+<Info>
+**🐍 Clean Python Syntax**
+
+No new syntax to learn - uses standard Python paradigms. Integrates seamlessly with your existing codebase using docstrings and type hints.
+</Info>
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/OpenHostaDocs/quickstart">
+    Get up and running in 5 minutes
+  </Card>
+
+  <Card title="Installation" icon="download" href="/OpenHostaDocs/installation">
+    Complete installation guide
+  </Card>
+
+  <Card title="Core Concepts" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Learn about emulate(), test(), ask(), and closure()
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    Browse real-world examples
+  </Card>
+</CardGroup>
+
+## Core Functions
+
+<CardGroup cols={2}>
+  <Card title="emulate()" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    AI-powered function implementation
+  </Card>
+
+  <Card title="test()" icon="vial" href="/OpenHostaDocs/core-concepts/test">
+    Semantic testing with natural language
+  </Card>
+
+  <Card title="ask()" icon="comments" href="/OpenHostaDocs/core-concepts/ask">
+    Simple LLM queries
+  </Card>
+
+  <Card title="closure()" icon="function" href="/OpenHostaDocs/core-concepts/closure">
+    Lambda-style AI functions
+  </Card>
+</CardGroup>
+
+## Installation
+
+<CodeGroup>
+
+```bash pip
+pip install OpenHosta
+```
+
+```bash GitHub
+pip install "git+https://github.com/hand-e-fr/OpenHosta.git"
+```
+
+```bash Unstable
+pip install "git+https://github.com/hand-e-fr/OpenHosta.git@unstable"
+```
+
+</CodeGroup>
+
+<Card title="Full Installation Guide" icon="book-open" href="/OpenHostaDocs/installation" horizontal>
+  See the complete installation guide with model setup
 </Card>
 
-## Make it yours
+## Why OpenHosta?
 
-Design a docs site that looks great and empowers your users.
+<AccordionGroup>
+  <Accordion title="Beyond Programming" icon="wand-magic-sparkles">
+    Create complex functions that were previously impossible by defining semantic functions in human language. Handle language processing related to common sense or challenging parameters that are difficult to implement in native Python.
+  </Accordion>
 
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
-  </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
-  </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
-  </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
-  </Card>
-</Columns>
+  <Accordion title="User-Friendly" icon="heart">
+    Much simpler than LangChain or LlamaIndex. Direct access to prompts with the MetaPrompt class using Jinja2 templates. Print conversations and parsing steps to understand what happened.
+  </Accordion>
 
-## Create beautiful pages
+  <Accordion title="Python Ecosystem" icon="python">
+    Fully integrated into Python syntax. Uses docstrings and type annotations that Python developers already know. Compatible with Pydantic, typing module, and lambdas.
+  </Accordion>
 
-Everything you need to create world-class documentation.
+  <Accordion title="Reproducibility" icon="rotate">
+    Make results reproducible by setting seeds for local Ollama installations. Essential for testing and debugging.
+  </Accordion>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+  <Accordion title="Open Source" icon="github">
+    MIT licensed and community-driven. We believe in the sustainability and independence of the AI sphere. Count on your feedback and contributions.
+  </Accordion>
+</AccordionGroup>
 
-## Need inspiration?
+## Community & Support
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<CardGroup cols={2}>
+  <Card title="GitHub" icon="github" href="https://github.com/hand-e-fr/OpenHosta">
+    Star us on GitHub
+  </Card>
+
+  <Card title="Discussions" icon="messages" href="https://github.com/hand-e-fr/OpenHosta/discussions">
+    Join the community
+  </Card>
+
+  <Card title="Issues" icon="bug" href="https://github.com/hand-e-fr/OpenHosta/issues">
+    Report bugs
+  </Card>
+
+  <Card title="Contributing" icon="handshake" href="https://github.com/hand-e-fr/OpenHosta/blob/main/CONTRIBUTING.md">
+    Contribute to OpenHosta
+  </Card>
+</CardGroup>
+
+## Authors
+
+**The OpenHosta Team:**
+- Emmanuel Batt - Manager and Coordinator, Founder of Hand-e
+- William Jolivet - DevOps, SysAdmin
+- Léandre Ramos - AI Developer
+- Merlin Devillard - UX Designer, Product Owner
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/hand-e-fr/OpenHosta/blob/main/LICENSE) file for details.

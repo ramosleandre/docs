@@ -1,0 +1,446 @@
+---
+title: "Custom Model Configuration"
+description: "Configure OpenHosta to work with any LLM provider including Ollama, Azure, and custom APIs"
+icon: "sliders"
+---
+
+## Overview
+
+OpenHosta is designed to work with any OpenAI-compatible LLM API. You can easily configure it to use different providers, local models, or custom implementations.
+
+<Note>
+By default, OpenHosta uses OpenAI's GPT-4.1, but you can switch to any compatible provider with just a few lines of code.
+</Note>
+
+## Quick Model Configuration
+
+### Using Environment Variables
+
+The simplest way to configure a model is through environment variables in your `.env` file:
+
+```bash .env
+OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1"
+OPENHOSTA_DEFAULT_MODEL_BASE_URL="https://api.openai.com/v1"
+OPENHOSTA_DEFAULT_MODEL_API_KEY="your-api-key-here"
+```
+
+### Programmatic Configuration
+
+You can also configure models directly in your code:
+
+```python
+from OpenHosta import config
+
+# Change the default model settings
+config.DefaultModel.base_url = "http://localhost:11434/v1"
+config.DefaultModel.model_name = "mistral-small3.2"
+config.DefaultModel.api_key = "not-used-by-ollama"
+```
+
+## OpenAICompatibleModel Class
+
+The `OpenAICompatibleModel` class is the foundation for all model configurations in OpenHosta.
+
+### Basic Usage
+
+```python
+from OpenHosta import OpenAICompatibleModel, config, emulate
+
+# Create a custom model instance
+my_model = OpenAICompatibleModel(
+    model_name="gpt-4o",
+    base_url="https://api.openai.com/v1",
+    api_key="your-api-key-here"
+)
+
+# Set as default model
+config.DefaultModel = my_model
+
+# Now all emulate calls will use this model
+def translate(text: str, language: str) -> str:
+    """Translate text to the specified language."""
+    return emulate()
+```
+
+### Constructor Parameters
+
+<ParamField path="model_name" type="string" required>
+  The name/ID of the model to use (e.g., "gpt-4o", "claude-3-opus")
+</ParamField>
+
+<ParamField path="base_url" type="string" required>
+  The base URL of the API endpoint
+</ParamField>
+
+<ParamField path="api_key" type="string" required>
+  Your API authentication key
+</ParamField>
+
+<ParamField path="chat_completion_url" type="string" default="/chat/completions">
+  The endpoint path for chat completions
+</ParamField>
+
+<ParamField path="timeout" type="int" default="120">
+  Request timeout in seconds
+</ParamField>
+
+<ParamField path="api_parameters" type="dict" default="{}">
+  Additional parameters to pass with each API call
+</ParamField>
+
+<ParamField path="additionnal_headers" type="dict" default="{}">
+  Additional HTTP headers for requests
+</ParamField>
+
+## Popular Provider Examples
+
+### Ollama (Local Models)
+
+Run models locally with Ollama:
+
+<Steps>
+  <Step title="Install Ollama">
+    ```bash
+    curl -fsSL https://ollama.com/install.sh | sh
+    ```
+  </Step>
+
+  <Step title="Pull a Model">
+    ```bash
+    ollama pull mistral-small3.2
+    ```
+  </Step>
+
+  <Step title="Configure OpenHosta">
+    ```python
+    from OpenHosta import OpenAICompatibleModel, config
+
+    ollama_model = OpenAICompatibleModel(
+        model_name="mistral-small3.2",
+        base_url="http://localhost:11434/v1",
+        api_key="none"  # Ollama doesn't require an API key
+    )
+
+    config.DefaultModel = ollama_model
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+For systems with limited resources, try `gemma3:4b` which requires less memory but still provides good performance.
+</Tip>
+
+### Microsoft Azure OpenAI
+
+Configure OpenHosta to work with Azure's OpenAI service:
+
+```python
+from OpenHosta import config, OpenAICompatibleModel
+
+azure_credentials = {
+    'Client_id': "your-client-id-guid",
+    'Client_secret': "your-client-secret",
+}
+
+azure_model = OpenAICompatibleModel(
+    base_url="https://YOUR_RESOURCE_NAME.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT_NAME",
+    chat_completion_url="/chat/completions?api-version=2023-07-01-preview",
+    model_name="gpt-4o",
+    additionnal_headers=azure_credentials,
+    api_key="your-azure-api-key"
+)
+
+config.DefaultModel = azure_model
+```
+
+### Anthropic Claude (via LiteLLM)
+
+While OpenHosta doesn't natively support Anthropic's API format, you can use LiteLLM as a proxy:
+
+```python
+from OpenHosta import OpenAICompatibleModel, config
+
+# LiteLLM provides OpenAI-compatible endpoints
+claude_model = OpenAICompatibleModel(
+    model_name="claude-3-opus-20240229",
+    base_url="http://localhost:8000",  # LiteLLM proxy
+    api_key="your-anthropic-api-key"
+)
+
+config.DefaultModel = claude_model
+```
+
+### OpenRouter
+
+Access multiple models through a single API:
+
+```python
+from OpenHosta import OpenAICompatibleModel, config
+
+openrouter_model = OpenAICompatibleModel(
+    model_name="anthropic/claude-3-opus",
+    base_url="https://openrouter.ai/api/v1",
+    api_key="your-openrouter-api-key"
+)
+
+config.DefaultModel = openrouter_model
+```
+
+## Custom Model Implementation
+
+For advanced use cases, you can create custom model classes by inheriting from `OpenAICompatibleModel`.
+
+### Basic Custom Model
+
+```python
+from typing import Dict
+from OpenHosta import OpenAICompatibleModel
+
+class MyCustomModel(OpenAICompatibleModel):
+    def api_call(
+        self,
+        messages: list[dict[str, str]],
+        llm_args: dict = {}
+    ) -> Dict:
+        # Your custom API call implementation
+        # This is where you'd make the actual HTTP request
+        # to your LLM provider
+
+        # Example: Add custom preprocessing
+        processed_messages = self.preprocess_messages(messages)
+
+        # Call parent implementation or your own
+        response = super().api_call(processed_messages, llm_args)
+
+        return response
+
+    def preprocess_messages(self, messages):
+        # Custom message preprocessing
+        return messages
+```
+
+### Advanced Example: Llama API
+
+Here's a complete example for Llama models with custom API handling:
+
+```python
+from typing import Dict
+from OpenHosta import emulate, OpenAICompatibleModel, OneTurnConversationPipeline
+import requests
+
+class LlamaModel(OpenAICompatibleModel):
+
+    def api_call(
+        self,
+        messages: list[dict[str, str]],
+        llm_args: dict = {"stream": False}
+    ) -> Dict:
+        # Build request body in Llama format
+        l_body = {
+            "model": self.model_name,
+            "prompt": "\n".join([str(x) for x in messages]),
+            "stream": False
+        }
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        # Merge API parameters
+        all_api_parameters = self.api_parameters | llm_args
+        for key, value in all_api_parameters.items():
+            if key == "force_json_output" and value:
+                l_body["response_format"] = {"type": "json_object"}
+            else:
+                l_body[key] = value
+
+        try:
+            full_url = f"{self.base_url}{self.chat_completion_url}"
+            response = requests.post(
+                full_url,
+                headers=headers,
+                json=l_body,
+                timeout=self.timeout
+            )
+
+            if response.status_code != 200:
+                response_text = response.text
+                raise Exception(
+                    f"[LlamaModel.api_call] API call was unsuccessful.\n"
+                    f"Status code: {response.status_code}:\n{response_text}"
+                )
+
+            self._nb_requests += 1
+            return response.json()
+
+        except Exception as e:
+            raise Exception(f"[LlamaModel.api_call] Request failed:\n{e}\n\n")
+
+    def get_response_content(self, response_dict: Dict) -> str:
+        # Extract content from Llama response format
+        json_string = response_dict["response"]
+        return json_string
+
+
+# Use the custom model
+llama_model = LlamaModel(
+    model_name="gemma3:4b",
+    base_url="http://localhost:11434",
+    chat_completion_url="/api/generate",
+    api_key="not-required"
+)
+
+def capitalize(sentence: str) -> str:
+    """Capitalize a sentence."""
+    return emulate(pipeline=OneTurnConversationPipeline(model_list=[llama_model]))
+
+print(capitalize("hello world!"))
+# Hello world!
+```
+
+## Model-Specific Parameters
+
+Different models support different parameters. Pass them via `llm_args`:
+
+```python
+from OpenHosta import emulate
+
+def creative_writing(prompt: str) -> str:
+    """Generate creative text based on the prompt."""
+    return emulate(force_llm_args={
+        "temperature": 0.9,      # Higher for more creativity
+        "top_p": 0.95,
+        "max_tokens": 500,
+        "presence_penalty": 0.6,
+        "frequency_penalty": 0.3
+    })
+
+def factual_extraction(text: str) -> str:
+    """Extract facts from text."""
+    return emulate(force_llm_args={
+        "temperature": 0.1,      # Lower for more deterministic output
+        "top_p": 0.1,
+        "max_tokens": 200
+    })
+```
+
+### Common Parameters
+
+<Info>
+**Common LLM Parameters:**
+
+- **🌡️ temperature** - Controls randomness (0.0 = deterministic, 2.0 = very creative)
+- **🎚️ top_p** - Nucleus sampling threshold (0.0 to 1.0)
+- **#️⃣ max_tokens** - Maximum tokens in response
+- **🚫 presence_penalty** - Penalizes repeated topics (-2.0 to 2.0)
+</Info>
+
+## Multiple Models
+
+You can use different models for different functions:
+
+```python
+from OpenHosta import OpenAICompatibleModel, emulate, OneTurnConversationPipeline
+
+# Fast, cheap model for simple tasks
+fast_model = OpenAICompatibleModel(
+    model_name="gpt-4o-mini",
+    base_url="https://api.openai.com/v1",
+    api_key="your-api-key"
+)
+
+# Powerful model for complex tasks
+powerful_model = OpenAICompatibleModel(
+    model_name="gpt-4o",
+    base_url="https://api.openai.com/v1",
+    api_key="your-api-key"
+)
+
+def simple_task(text: str) -> str:
+    """A simple text transformation."""
+    pipeline = OneTurnConversationPipeline(model_list=[fast_model])
+    return emulate(pipeline=pipeline)
+
+def complex_task(text: str) -> str:
+    """A complex analysis requiring deep understanding."""
+    pipeline = OneTurnConversationPipeline(model_list=[powerful_model])
+    return emulate(pipeline=pipeline)
+```
+
+## Debugging Model Configuration
+
+### Print Last Prompt
+
+See exactly what was sent to the LLM:
+
+```python
+from OpenHosta import emulate, print_last_prompt
+
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers."""
+    return emulate()
+
+result = multiply(5, 6)
+print_last_prompt(multiply)
+```
+
+### Print Last Response
+
+See the raw response from the LLM:
+
+```python
+from OpenHosta import emulate, print_last_response
+
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers."""
+    return emulate()
+
+result = multiply(5, 6)
+print_last_response(multiply)
+```
+
+### Print Decoding Steps
+
+See how OpenHosta parsed the response:
+
+```python
+from OpenHosta import emulate, print_last_decoding
+
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers."""
+    return emulate()
+
+result = multiply(5, 6)
+print_last_decoding(multiply)
+```
+
+## Best Practices
+
+<Tip>
+**Model Configuration Best Practices:**
+
+- **🔒 Use Environment Variables** - Keep API keys secure in .env files
+- **⏰ Set Appropriate Timeouts** - Longer timeouts for complex tasks, shorter for simple ones
+- **🧪 Test with Multiple Models** - Different models excel at different tasks
+- **💵 Monitor Costs** - Track API usage and costs for production deployments
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="MetaPrompt Customization" icon="pen-to-square" href="/OpenHostaDocs/advanced/metaprompt">
+    Customize how OpenHosta communicates with LLMs
+  </Card>
+
+  <Card title="Reasoning Models" icon="brain" href="/OpenHostaDocs/advanced/reasoning-models">
+    Use models with built-in reasoning capabilities
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Use async for better performance
+  </Card>
+
+  <Card title="Installation Guide" icon="download" href="/OpenHostaDocs/installation">
+    See more setup options
+  </Card>
+</CardGroup>

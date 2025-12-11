@@ -1,0 +1,172 @@
+---
+title: "Quickstart Guide"
+description: "Get started with OpenHosta in 5 minutes"
+icon: "rocket"
+---
+
+## Get started in 3 steps
+
+This guide will help you install OpenHosta, configure a model, and write your first AI-powered function.
+
+### Step 1: Install OpenHosta
+
+<AccordionGroup>
+  <Accordion icon="python" title="Using pip (Recommended)">
+    Install OpenHosta from PyPI:
+
+    ```bash
+    pip install OpenHosta
+    ```
+
+    Verify the installation:
+    ```bash
+    pip show OpenHosta
+    ```
+  </Accordion>
+
+  <Accordion icon="github" title="Using GitHub">
+    Install directly from the repository:
+
+    ```bash
+    pip install "git+https://github.com/hand-e-fr/OpenHosta.git"
+    ```
+
+    For the latest unstable version:
+    ```bash
+    pip install "git+https://github.com/hand-e-fr/OpenHosta.git@unstable"
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+We recommend using a virtual environment. Create one with:
+```bash
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+```
+</Tip>
+
+### Step 2: Configure Your Model
+
+Choose between using a cloud API or a local model:
+
+<Tabs>
+  <Tab title="OpenAI (Cloud)">
+    Create a `.env` file in your project root:
+
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="your-api-key-here"
+    ```
+
+    Get your API key from [OpenAI Platform](https://platform.openai.com/account/api-keys).
+
+    <Info>
+    OpenHosta will automatically load the `.env` file from your working directory or any parent directory.
+    </Info>
+  </Tab>
+
+  <Tab title="Ollama (Local)">
+    1. Install Ollama:
+    ```bash
+    curl -fsSL https://ollama.com/install.sh | sh
+    ```
+
+    2. Pull a model:
+    ```bash
+    ollama pull mistral-small3.2
+    ```
+
+    3. Create a `.env` file:
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="mistral-small3.2"
+    OPENHOSTA_DEFAULT_MODEL_BASE_URL="http://localhost:11434/v1"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="none"
+    ```
+
+    <Tip>
+    For systems with limited resources, try `gemma3:4b` which requires less memory.
+    </Tip>
+  </Tab>
+</Tabs>
+
+### Step 3: Write Your First Function
+
+Create a new Python file and write your first AI-powered function:
+
+```python hello_openhosta.py
+from OpenHosta import emulate
+
+def translate(text: str, language: str) -> str:
+    """
+    This function translates the text into the specified language.
+    """
+    return emulate()
+
+# Test it
+result = translate("Hello World!", "French")
+print(result)
+# Output: Bonjour le monde !
+```
+
+Run it:
+```bash
+python hello_openhosta.py
+```
+
+<Check>
+Congratulations! You've successfully run your first OpenHosta function.
+</Check>
+
+## Next Steps
+
+Now that you have OpenHosta running, explore its core features:
+
+<CardGroup cols={2}>
+  <Card title="emulate() Function" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Learn about AI-powered function implementation
+  </Card>
+
+  <Card title="test() Function" icon="vial" href="/OpenHostaDocs/core-concepts/test">
+    Semantic testing with natural language
+  </Card>
+
+  <Card title="Type Safety" icon="shield" href="/OpenHostaDocs/advanced/types-pydantic">
+    Use Pydantic models and complex types
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Run functions asynchronously
+  </Card>
+</CardGroup>
+
+## Common Issues
+
+<AccordionGroup>
+  <Accordion title="Module not found error" icon="circle-exclamation">
+    Make sure you've activated your virtual environment and installed OpenHosta:
+    ```bash
+    source .venv/bin/activate
+    pip install OpenHosta
+    ```
+  </Accordion>
+
+  <Accordion title="API key errors" icon="key">
+    Ensure your `.env` file is in the correct location and the API key is valid:
+    ```bash
+    # Check if .env is loaded
+    python -c "from OpenHosta import config; print(config.DefaultModel.api_key)"
+    ```
+  </Accordion>
+
+  <Accordion title="Ollama connection refused" icon="wifi">
+    Make sure Ollama is running:
+    ```bash
+    ollama serve
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Card title="Full Installation Guide" icon="book" href="/OpenHostaDocs/installation" horizontal>
+  See the complete installation guide with more options and troubleshooting
+</Card>

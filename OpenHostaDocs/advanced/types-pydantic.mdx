@@ -1,0 +1,311 @@
+---
+title: "Types & Pydantic Support"
+description: "Comprehensive type support including Pydantic models, dataclasses, and typing module"
+icon: "shield-check"
+---
+
+## Overview
+
+OpenHosta provides robust type support for function inputs and outputs, automatically validating and converting data to match your specified types. This ensures type safety and data consistency across your AI-powered functions.
+
+<Note>
+Type annotations are sent to the LLM, helping it generate responses in the correct format. Always annotate your functions for best results.
+</Note>
+
+## Supported Types
+
+OpenHosta supports a wide range of Python types out of the box:
+
+### Built-in Types
+
+All standard Python types are supported:
+
+- `str`, `int`, `float`, `bool`
+- `list`, `tuple`, `dict`, `set`, `frozenset`
+- `None` and `type(None)`
+
+<Warning>
+The `complex` type is not supported. If you need complex numbers, use a `tuple` and manually convert after processing.
+</Warning>
+
+### Typing Module
+
+OpenHosta fully supports the `typing` module for complex type annotations:
+
+```python
+from OpenHosta import emulate
+from typing import Dict, Tuple, List, Optional, Union, Literal
+
+def analyze_text(text: str) -> Dict[str, List[Tuple[int, str]]]:
+    """
+    Analyze text to map each word to a list of tuples containing word length and word.
+    """
+    return emulate()
+
+# Example usage
+analysis = analyze_text("Hello, World!")
+print(analysis)
+# {'Hello': [(5, 'Hello')], 'World': [(5, 'World')]}
+
+print(type(analysis))
+# <class 'dict'>
+```
+
+<Info>
+**Supported Typing Constructs:**
+
+- **📋 List** - Ordered collections: `List[str]`, `List[int]`
+- **📖 Dict** - Key-value mappings: `Dict[str, int]`
+- **📦 Tuple** - Fixed-size sequences: `Tuple[int, str, float]`
+- **🔀 Union & Optional** - Multiple types: `Union[int, str]`, `Optional[str]`
+</Info>
+
+#### Supported Typing Constructs
+
+- `List[T]`, `Dict[K, V]`, `Tuple[T1, T2, ...]`
+- `Set[T]`, `FrozenSet[T]`
+- `Deque[T]`, `Iterable[T]`, `Sequence[T]`, `Mapping[K, V]`
+- `Union[T1, T2, ...]`, `Optional[T]`
+- `Literal[value1, value2, ...]`
+
+### Optional Types
+
+Using `Optional` can help the LLM handle edge cases more gracefully:
+
+<Tip>
+Annotating your function's return value as `Optional` tends to make the LLM respond with `None` in case of inconsistent input. This is useful for error handling in complex programs.
+</Tip>
+
+```python
+from OpenHosta import emulate
+from typing import Optional
+
+def extract_email(text: str) -> Optional[str]:
+    """
+    Extract an email address from the text. Return None if no email is found.
+    """
+    return emulate()
+
+result = extract_email("Contact us at support@example.com")
+print(result)  # support@example.com
+
+result = extract_email("No email here")
+print(result)  # None
+```
+
+## Pydantic Integration
+
+<Info>
+Pydantic provides data validation and settings management using Python type annotations. Learn more at [docs.pydantic.dev](https://docs.pydantic.dev/latest/api/base_model/).
+</Info>
+
+OpenHosta seamlessly integrates with Pydantic models, offering:
+
+- **Type Safety:** Ensures data integrity through Python's type hints
+- **Automatic Validation:** Validates input data against Pydantic models
+- **Data Parsing:** Automatically converts LLM output to specified types
+
+### Basic Pydantic Example
+
+```python
+from pydantic import BaseModel
+from OpenHosta import emulate
+
+class Person(BaseModel):
+    name: str
+    age: int
+
+def find_person_info(sentence: str) -> Person:
+    """
+    Extract person information from text.
+
+    Args:
+        sentence: The text to search for person information
+
+    Returns:
+        A Person model with the extracted information.
+        If information is not found, use reasonable defaults or None.
+    """
+    return emulate()
+
+result = find_person_info(
+    "The captain's age is one year more than the first officer's age. "
+    "The first officer is 30 years old"
+)
+print(result)
+# Person(name='first officer', age=30)
+```
+
+### Complex Pydantic Models
+
+You can use nested Pydantic models for complex data structures:
+
+```python
+from pydantic import BaseModel, EmailStr
+from typing import List
+from OpenHosta import emulate
+
+class Address(BaseModel):
+    street: str
+    city: str
+    postal_code: str
+
+class Client(BaseModel):
+    name: str
+    email: EmailStr
+    company: str
+    address: Address
+
+def extract_client_data(text: str) -> Client:
+    """
+    Extract comprehensive client information from text.
+    """
+    return emulate()
+
+email_text = """
+FROM: john.doe@techcorp.com
+TO: sales@example.com
+
+Hello, I'm John Doe from TechCorp.
+Please send the invoice to our office at 123 Tech Street, San Francisco, CA 94102.
+"""
+
+client = extract_client_data(email_text)
+print(client.name)  # John Doe
+print(client.address.city)  # San Francisco
+```
+
+<Warning>
+Pydantic models cannot be defined inside a function. Always define them at the module level to avoid errors.
+</Warning>
+
+## Dataclasses
+
+Python's `dataclasses` are fully supported and work similarly to Pydantic models:
+
+```python
+from OpenHosta import emulate
+from dataclasses import dataclass
+
+@dataclass
+class Client:
+    name: str
+    surname: str
+    company: str
+    email: str
+    town: str
+    address: str
+
+def extract_client_info(text: str) -> Client:
+    """
+    Extract client information from email text.
+    """
+    return emulate()
+
+client = extract_client_info("""
+FROM: sebastien@somecorp.com
+TO: shipment@hand-e.fr
+Object: Sample request
+
+Hello bob, I am Sebastian from Paris, France.
+Could you send me a sample of your main product?
+My office address is 3 rue de la république, Lyon 1er
+""")
+
+print(client)
+# Client(name='Sebastian', surname='', company='somecorp.com',
+#        email='sebastien@somecorp.com', town='Lyon', address='3 rue de la république, Lyon 1er')
+```
+
+## Enums
+
+Enumerations provide type-safe way to define a set of named values:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+
+class Sentiment(Enum):
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    NEUTRAL = "neutral"
+
+def analyze_sentiment(text: str) -> Sentiment:
+    """
+    Analyze the sentiment of the given text.
+    """
+    return emulate()
+
+result = analyze_sentiment("I love this product! It's amazing!")
+print(result)  # Sentiment.POSITIVE
+print(result.value)  # "positive"
+```
+
+## Type Validation
+
+OpenHosta automatically validates and converts the LLM output to match your specified type:
+
+<Steps>
+  <Step title="LLM Response">
+    The LLM generates a response based on your function's docstring
+  </Step>
+
+  <Step title="Parsing">
+    OpenHosta parses the response into a Python object
+  </Step>
+
+  <Step title="Validation">
+    The parsed object is validated against your return type annotation
+  </Step>
+
+  <Step title="Conversion">
+    If necessary, the object is converted to match the exact type
+  </Step>
+</Steps>
+
+```python
+from OpenHosta import emulate
+from typing import List
+
+def extract_numbers(text: str) -> List[int]:
+    """
+    Extract all numbers from the text as a list of integers.
+    """
+    return emulate()
+
+# Even if the LLM returns strings, they're converted to integers
+result = extract_numbers("I have 5 apples and 10 oranges")
+print(result)  # [5, 10]
+print(type(result[0]))  # <class 'int'>
+```
+
+## Best Practices
+
+<Tip>
+**Type System Best Practices:**
+
+- **✏️ Always Annotate** - Type annotations help the LLM understand expected output format
+- **✅ Use Pydantic for Validation** - Pydantic provides advanced validation and error messages
+- **❓ Leverage Optional** - Use Optional for fields that might be missing
+- **📄 Document Complex Types** - Add clear docstrings explaining complex nested types
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Learn about asynchronous function execution
+  </Card>
+
+  <Card title="Custom Models" icon="sliders" href="/OpenHostaDocs/advanced/custom-models">
+    Configure custom LLM providers
+  </Card>
+
+  <Card title="Data Extraction" icon="database" href="/OpenHostaDocs/examples/data-extraction">
+    See practical examples of data extraction
+  </Card>
+
+  <Card title="emulate() Function" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Return to core concepts
+  </Card>
+</CardGroup>

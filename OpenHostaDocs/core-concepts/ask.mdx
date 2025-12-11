@@ -1,0 +1,405 @@
+---
+title: "ask() Function"
+description: "Simple and direct LLM queries"
+icon: "comments"
+---
+
+## Overview
+
+The `ask()` function provides a simple way to make direct queries to the LLM without OpenHosta's meta-prompt system. It's perfect for quick questions, interactive exploration, and simple chat-like interactions.
+
+<Note>
+Think of `ask()` as a simplified interface to talk directly to the LLM, similar to using ChatGPT or Claude directly.
+</Note>
+
+## Basic Usage
+
+```python
+from OpenHosta import ask
+
+response = ask("What is the capital of France?")
+print(response)
+# Output: The capital of France is Paris.
+```
+
+## How It Works
+
+Unlike `emulate()` which wraps your query in a specialized prompt, `ask()` sends your question directly to the LLM with minimal processing.
+
+<Steps>
+  <Step title="Write Question">
+    Formulate your question as a string
+  </Step>
+
+  <Step title="LLM Processing">
+    The question is sent directly to the LLM
+  </Step>
+
+  <Step title="Get Response">
+    Receive the LLM's response as a string
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Quick Information Retrieval
+
+```python
+from OpenHosta import ask
+
+# Get quick facts
+answer = ask("What does HTTP stand for?")
+print(answer)
+# Output: HTTP stands for HyperText Transfer Protocol...
+```
+
+### Code Explanation
+
+```python
+from OpenHosta import ask
+
+code_snippet = """
+def factorial(n):
+    return 1 if n <= 1 else n * factorial(n-1)
+"""
+
+explanation = ask(f"Explain this code:\n{code_snippet}")
+print(explanation)
+```
+
+### Interactive Notebooks
+
+Perfect for Jupyter notebooks or interactive Python sessions:
+
+```python
+from OpenHosta import ask
+
+# Explore libraries
+info = ask("Tell me about scikit-learn's main features")
+print(info)
+
+# Get coding help
+help_text = ask("How do I read a CSV file in Python?")
+print(help_text)
+```
+
+### Documentation Summarization
+
+```python
+from OpenHosta import ask
+
+documentation = """
+[Long API documentation here...]
+"""
+
+summary = ask(f"Summarize this documentation in 3 bullet points:\n{documentation}")
+print(summary)
+```
+
+## Custom System Prompts
+
+You can customize the system prompt using `MetaPrompt`:
+
+```python
+from OpenHosta import ask, MetaPrompt
+
+# Create a specialized assistant
+system_prompt = MetaPrompt("You are a helpful Python programming assistant specialized in {domain}.")
+
+# Ask domain-specific questions
+response = ask(
+    "What is overfitting?",
+    system=system_prompt.render(domain="machine learning")
+)
+print(response)
+```
+
+### Example: Code Reviewer
+
+```python
+from OpenHosta import ask, MetaPrompt
+
+code_reviewer = MetaPrompt("""
+You are an experienced code reviewer.
+Review the following code for:
+- Bugs
+- Performance issues
+- Best practices
+- Security concerns
+""")
+
+code = """
+def login(username, password):
+    query = f"SELECT * FROM users WHERE username='{username}' AND password='{password}'"
+    result = db.execute(query)
+    return result
+"""
+
+review = ask(code, system=code_reviewer.render())
+print(review)
+# Will point out SQL injection vulnerability
+```
+
+### Example: Technical Writer
+
+```python
+from OpenHosta import ask, MetaPrompt
+
+tech_writer = MetaPrompt("""
+You are a technical writer.
+Explain technical concepts in simple terms that non-technical users can understand.
+Use analogies and examples when helpful.
+""")
+
+explanation = ask(
+    "Explain what a REST API is",
+    system=tech_writer.render()
+)
+print(explanation)
+```
+
+## Advanced Usage
+
+### Multi-turn Conversations
+
+For simple conversations, manually maintain context:
+
+```python
+from OpenHosta import ask
+
+conversation_history = []
+
+def chat(message):
+    # Add user message to history
+    conversation_history.append(f"User: {message}")
+
+    # Create context from history
+    context = "\n".join(conversation_history)
+
+    # Get response
+    response = ask(f"{context}\nAssistant:")
+
+    # Add to history
+    conversation_history.append(f"Assistant: {response}")
+
+    return response
+
+# Use it
+print(chat("Hello! My name is John"))
+print(chat("What's my name?"))  # Will remember "John"
+```
+
+### Structured Queries
+
+```python
+from OpenHosta import ask
+
+query_template = """
+Given the following data:
+{data}
+
+Please answer: {question}
+"""
+
+data = {
+    "sales_q1": 100000,
+    "sales_q2": 120000,
+    "sales_q3": 115000,
+    "sales_q4": 140000
+}
+
+question = "What was the total sales for the year?"
+
+answer = ask(query_template.format(
+    data=data,
+    question=question
+))
+print(answer)
+```
+
+## Comparison with Other Functions
+
+<Tabs>
+  <Tab title="ask()">
+    **Best for**: Quick queries, exploration, direct LLM access
+
+    ```python
+    from OpenHosta import ask
+
+    response = ask("What is Python?")
+    ```
+
+    ✅ Simple and direct
+    ✅ No function definition needed
+    ❌ No type safety
+    ❌ No structured output
+  </Tab>
+
+  <Tab title="emulate()">
+    **Best for**: Structured functions, type-safe operations
+
+    ```python
+    from OpenHosta import emulate
+
+    def classify(text: str) -> str:
+        """Classify text as positive or negative"""
+        return emulate()
+
+    result = classify("I love this!")
+    ```
+
+    ✅ Type safety
+    ✅ Structured output
+    ✅ Reusable
+    ❌ Requires function definition
+  </Tab>
+
+  <Tab title="test()">
+    **Best for**: Boolean conditions, semantic testing
+
+    ```python
+    from OpenHosta import test
+
+    if test(f"this is spam: {email}"):
+        block_email()
+    ```
+
+    ✅ Returns boolean
+    ✅ Clear intent
+    ❌ Limited to True/False
+  </Tab>
+</Tabs>
+
+## Best Practices
+
+### Clear and Specific Questions
+
+<CodeGroup>
+
+```python Good Example
+answer = ask("What are the differences between Python lists and tuples?")
+```
+
+```python Bad Example
+answer = ask("Python stuff")  # Too vague
+```
+
+</CodeGroup>
+
+### Provide Context When Needed
+
+```python
+# Good: Includes context
+code = "def foo(x): return x * 2"
+answer = ask(f"What does this function do and why might it be useful?\n{code}")
+
+# Better: Even more specific
+answer = ask(
+    f"This function is from a data processing pipeline. "
+    f"What does it do and what are potential issues?\n{code}"
+)
+```
+
+## Performance Tips
+
+<Tip>
+**Batch Related Questions**: If you have multiple related questions, combine them into one query to save API calls:
+
+```python
+# Instead of multiple calls
+q1 = ask("What is Flask?")
+q2 = ask("What is Django?")
+q3 = ask("Which should I use?")
+
+# Do this
+answer = ask("""
+1. What is Flask?
+2. What is Django?
+3. Which framework should I use for a small project?
+""")
+```
+</Tip>
+
+## Error Handling
+
+```python
+from OpenHosta import ask
+
+try:
+    response = ask("What is quantum computing?")
+    print(response)
+except Exception as e:
+    print(f"Error querying LLM: {e}")
+    # Handle error gracefully
+```
+
+## Async Support
+
+For web applications or concurrent queries:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import ask
+
+async def get_info(topic):
+    return await ask(f"Explain {topic} in one sentence")
+
+# Process multiple queries concurrently
+topics = ["Python", "JavaScript", "Rust"]
+results = await asyncio.gather(*[
+    get_info(topic) for topic in topics
+])
+
+for topic, result in zip(topics, results):
+    print(f"{topic}: {result}")
+```
+
+<Card title="Async Guide" icon="bolt" href="/OpenHostaDocs/advanced/async" horizontal>
+  Learn more about asynchronous operations
+</Card>
+
+## Real-World Example
+
+```python
+from OpenHosta import ask
+
+class AIAssistant:
+    """Simple AI assistant for your application"""
+
+    def __init__(self, context: str = ""):
+        self.context = context
+
+    def query(self, question: str) -> str:
+        """Ask a question with application context"""
+        full_query = f"{self.context}\n\nQuestion: {question}" if self.context else question
+        return ask(full_query)
+
+# Usage
+assistant = AIAssistant(context="You are helping users with a Python data analysis tool.")
+
+help_text = assistant.query("How do I import a CSV file?")
+print(help_text)
+
+explanation = assistant.query("What's the difference between pandas and numpy?")
+print(explanation)
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="emulate()" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    For structured, type-safe functions
+  </Card>
+
+  <Card title="test()" icon="vial" href="/OpenHostaDocs/core-concepts/test">
+    For semantic boolean testing
+  </Card>
+
+  <Card title="MetaPrompt" icon="pen" href="/OpenHostaDocs/advanced/metaprompt">
+    Customize system prompts
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    Browse real-world examples
+  </Card>
+</CardGroup>

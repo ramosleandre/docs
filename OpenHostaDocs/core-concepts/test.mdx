@@ -1,0 +1,330 @@
+---
+title: "test() Function"
+description: "Semantic testing with natural language conditions"
+icon: "vial"
+---
+
+## Overview
+
+The `test()` function enables semantic testing using natural language. Instead of writing complex conditional logic, you can express test conditions in plain English and let AI evaluate them.
+
+<Note>
+Perfect for testing concepts that are difficult to express in traditional code, like sentiment analysis, intent detection, or content moderation.
+</Note>
+
+## Basic Usage
+
+```python
+from OpenHosta import test
+
+sentence = "You are a nice person."
+
+if test(f"this contains an insult: {sentence}"):
+    print("The sentence is considered an insult.")
+else:
+    print("The sentence is not considered an insult.")
+
+# Output: The sentence is not considered an insult.
+```
+
+## How It Works
+
+The `test()` function:
+1. Takes a natural language condition as a string
+2. Sends it to the LLM for evaluation
+3. Returns a boolean (`True` or `False`)
+
+<Steps>
+  <Step title="Write Condition">
+    Express your test condition in natural language
+  </Step>
+
+  <Step title="AI Evaluation">
+    The LLM evaluates the condition
+  </Step>
+
+  <Step title="Boolean Result">
+    Returns `True` or `False`
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Content Moderation
+
+```python
+from OpenHosta import test
+
+user_comment = "This product is terrible and you're stupid for buying it!"
+
+if test(f"this comment is inappropriate: {user_comment}"):
+    print("Comment flagged for moderation")
+    # Block or filter the comment
+```
+
+### Intent Detection
+
+```python
+from OpenHosta import test
+
+user_message = "I'd like to cancel my subscription"
+
+if test(f"user wants to cancel: {user_message}"):
+    # Route to cancellation flow
+    initiate_cancellation()
+elif test(f"user needs help: {user_message}"):
+    # Route to support
+    show_help_options()
+```
+
+### Sentiment Analysis
+
+```python
+from OpenHosta import test
+
+review = "The hotel was okay, nothing special but clean."
+
+if test(f"this review is positive: {review}"):
+    sentiment = "positive"
+elif test(f"this review is negative: {review}"):
+    sentiment = "negative"
+else:
+    sentiment = "neutral"
+
+print(f"Sentiment: {sentiment}")
+# Output: Sentiment: neutral
+```
+
+### Data Validation
+
+```python
+from OpenHosta import test
+
+email_content = """
+Subject: Urgent: Your account has been compromised!
+Click here immediately to verify your account...
+"""
+
+is_phishing = test(f"this email looks like a phishing attempt: {email_content}")
+
+if is_phishing:
+    print("⚠️ Warning: Potential phishing email detected")
+```
+
+### Language Detection
+
+```python
+from OpenHosta import test
+
+text = "Bonjour, comment allez-vous?"
+
+if test(f"this text is in French: {text}"):
+    print("French detected")
+elif test(f"this text is in English: {text}"):
+    print("English detected")
+```
+
+## Advanced Examples
+
+### Combining Multiple Conditions
+
+```python
+from OpenHosta import test
+
+product_description = "Organic cotton t-shirt, eco-friendly dye, fair trade"
+
+is_sustainable = (
+    test(f"product is organic: {product_description}") and
+    test(f"product is eco-friendly: {product_description}")
+)
+
+if is_sustainable:
+    print("✓ Qualifies for 'Sustainable Products' category")
+```
+
+### Context-Aware Testing
+
+```python
+from OpenHosta import test
+
+conversation_history = [
+    "User: I'm having trouble with my order",
+    "Agent: I'm sorry to hear that. Can you provide your order number?",
+    "User: It's 12345",
+    "Agent: Great, let me look that up"
+]
+
+full_context = "\n".join(conversation_history)
+
+if test(f"the customer service agent is being helpful: {full_context}"):
+    print("Agent performance: Good")
+```
+
+### Dynamic Content Classification
+
+```python
+from OpenHosta import test
+
+article = """
+The new AI model achieved state-of-the-art results on the benchmark,
+surpassing previous models by 15% in accuracy...
+"""
+
+categories = []
+
+if test(f"this article is about AI/ML: {article}"):
+    categories.append("AI/ML")
+
+if test(f"this article contains technical content: {article}"):
+    categories.append("Technical")
+
+if test(f"this article is suitable for beginners: {article}"):
+    categories.append("Beginner-Friendly")
+
+print(f"Categories: {', '.join(categories)}")
+```
+
+## Best Practices
+
+### Be Specific
+
+<CodeGroup>
+
+```python Good Example
+text = "This product broke after one day"
+is_negative = test(f"this review expresses dissatisfaction: {text}")
+```
+
+```python Bad Example
+text = "This product broke after one day"
+is_bad = test(f"bad: {text}")  # Too vague
+```
+
+</CodeGroup>
+
+### Provide Context
+
+```python
+# Good: Include relevant context
+user_input = "I want to return this"
+order_date = "2024-01-15"
+
+can_return = test(
+    f"Given order date {order_date} and today's date, "
+    f"is this return request within 30-day window: {user_input}"
+)
+```
+
+### Use Clear Language
+
+```python
+# Clear and unambiguous
+if test(f"this message contains profanity: {message}"):
+    filter_message()
+
+# Ambiguous - avoid
+if test(f"bad words: {message}"):
+    filter_message()
+```
+
+## Performance Considerations
+
+<Warning>
+Each `test()` call makes an API request to the LLM. For high-frequency testing, consider:
+- Caching results for identical conditions
+- Batching multiple tests when possible
+- Using traditional logic for simple conditions
+</Warning>
+
+### When NOT to Use test()
+
+Use traditional code for simple, deterministic conditions:
+
+```python
+# Don't use test() for this
+if test(f"this number is greater than 10: {number}"):  # ❌
+    ...
+
+# Use normal Python instead
+if number > 10:  # ✅
+    ...
+```
+
+## Combining with Traditional Logic
+
+Mix `test()` with regular Python logic for optimal results:
+
+```python
+from OpenHosta import test
+
+def should_flag_content(text: str, user_reports: int) -> bool:
+    # Traditional logic for objective criteria
+    if user_reports >= 10:
+        return True
+
+    # AI for subjective evaluation
+    if test(f"this content is offensive or harmful: {text}"):
+        return True
+
+    return False
+```
+
+## Error Handling
+
+```python
+from OpenHosta import test
+
+try:
+    is_spam = test(f"this email is spam: {email_content}")
+
+    if is_spam:
+        move_to_spam_folder()
+except Exception as e:
+    # Handle API errors gracefully
+    print(f"Classification failed: {e}")
+    # Fall back to traditional spam filtering
+    use_traditional_spam_filter()
+```
+
+## Async Usage
+
+For web applications or concurrent processing:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import test
+
+async def moderate_comment(comment: str) -> bool:
+    """Check if comment needs moderation"""
+    return await test(f"this comment is inappropriate: {comment}")
+
+# Process multiple comments concurrently
+comments = ["Comment 1", "Comment 2", "Comment 3"]
+results = await asyncio.gather(*[
+    moderate_comment(c) for c in comments
+])
+```
+
+<Card title="Async Guide" icon="bolt" href="/OpenHostaDocs/advanced/async" horizontal>
+  Learn more about asynchronous OpenHosta functions
+</Card>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="emulate()" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    AI-powered function implementation
+  </Card>
+
+  <Card title="ask()" icon="comments" href="/OpenHostaDocs/core-concepts/ask">
+    Simple LLM queries
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    Browse real-world examples
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Use test() asynchronously
+  </Card>
+</CardGroup>

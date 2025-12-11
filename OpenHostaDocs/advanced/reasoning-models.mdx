@@ -1,0 +1,455 @@
+---
+title: "Reasoning Models"
+description: "Use advanced reasoning models like DeepSeek-R1 and GPT-OSS with OpenHosta"
+icon: "brain"
+---
+
+## Overview
+
+Reasoning models are a new generation of LLMs that include an explicit reasoning step before providing answers. OpenHosta automatically detects and handles these models, extracting the final answer while preserving the ability to inspect the reasoning process.
+
+<Info>
+Models like DeepSeek-R1 and GPT-OSS think through problems step-by-step before answering, leading to more accurate results for complex tasks.
+</Info>
+
+## What are Reasoning Models?
+
+Reasoning models generate their response in two parts:
+
+<Steps>
+  <Step title="Reasoning Phase">
+    The model thinks through the problem, exploring different approaches and considering edge cases
+  </Step>
+
+  <Step title="Answer Phase">
+    The model provides the final answer based on its reasoning
+  </Step>
+</Steps>
+
+<Note>
+**Model Comparison:**
+
+- **⚡ Traditional Models** - Direct response without explicit reasoning
+- **🧠 Reasoning Models** - Show their work before giving the answer
+</Note>
+
+## Supported Reasoning Models
+
+Popular reasoning models that work with OpenHosta:
+
+- **DeepSeek-R1** - Advanced reasoning model from DeepSeek
+- **GPT-OSS** - Open-source reasoning model (20B parameters recommended)
+- **QwQ-32B** - Qwen's reasoning model
+- Any model that outputs reasoning in a specific format
+
+## Automatic Reasoning Detection
+
+OpenHosta automatically detects reasoning content and separates it from the final answer:
+
+```python
+from OpenHosta import OpenAICompatibleModel, config, emulate
+
+# Configure a reasoning model
+gpt_oss_20b = OpenAICompatibleModel(
+    base_url="http://localhost:11434/v1",
+    model_name="gpt-oss:20b",
+    timeout=180,  # Longer timeout for reasoning
+    api_key="none"
+)
+
+config.DefaultModel = gpt_oss_20b
+
+def sum_numbers(a: int, b: int) -> int:
+    """
+    This function returns the sum of two numbers.
+    """
+    return emulate()
+
+result = sum_numbers(12, 30)
+print(result)  # 42
+
+# The reasoning is automatically removed from the final output
+```
+
+<Check>
+OpenHosta automatically identifies the reasoning section and extracts only the answer, then casts it to your specified return type.
+</Check>
+
+## Viewing the Reasoning Process
+
+You can inspect the full conversation including the reasoning:
+
+```python
+from OpenHosta import print_last_prompt
+
+print_last_prompt(sum_numbers)
+```
+
+**Example Output:**
+
+The output shows the complete conversation including the reasoning phase:
+
+```text
+Model
+-----------------
+name=gpt-oss:20b
+base_url=http://localhost:11434/v1
+
+System prompt:
+-----------------
+You will act as a simulator for functions...
+
+User prompt:
+-----------------
+sum_numbers(a = 12, b = 30)
+
+Rational:
+-----------------
+The user calls sum_numbers(a=12, b=30). Function returns sum of two numbers,
+so return 42. No other nuance.
+
+LLM response:
+-----------------
+42
+```
+
+<Note>
+The "Rational" section contains the model's reasoning, which is automatically removed before type casting to `int`.
+</Note>
+
+## Configuration for Reasoning Models
+
+### Timeout Settings
+
+Reasoning models take longer to respond due to the thinking phase:
+
+```python
+from OpenHosta import OpenAICompatibleModel
+
+reasoning_model = OpenAICompatibleModel(
+    base_url="http://localhost:11434/v1",
+    model_name="gpt-oss:20b",
+    timeout=180,  # 3 minutes instead of default 120s
+    api_key="none"
+)
+```
+
+<Tip>
+Set timeout to 180-300 seconds for reasoning models, depending on task complexity.
+</Tip>
+
+### Temperature Settings
+
+Reasoning models often work best with lower temperatures:
+
+```python
+from OpenHosta import emulate
+
+def complex_analysis(data: str) -> str:
+    """Perform complex analysis on the data."""
+    return emulate(force_llm_args={
+        "temperature": 0.3,  # Lower for more focused reasoning
+        "top_p": 0.9
+    })
+```
+
+## Use Cases for Reasoning Models
+
+### Mathematical Problems
+
+Reasoning models excel at multi-step math problems:
+
+```python
+from OpenHosta import emulate
+
+def solve_word_problem(problem: str) -> int:
+    """
+    Solve a mathematical word problem and return the numerical answer.
+
+    Args:
+        problem: A word problem description
+
+    Returns:
+        The numerical solution
+    """
+    return emulate()
+
+result = solve_word_problem("""
+Alice has 15 apples. She gives 3 to Bob, then buys 8 more.
+Bob gives her back 2 apples. How many apples does Alice have now?
+""")
+
+print(result)  # 22
+```
+
+### Logic Puzzles
+
+Complex logic problems benefit from step-by-step reasoning:
+
+```python
+from OpenHosta import emulate
+from typing import List
+
+def solve_logic_puzzle(puzzle: str) -> List[str]:
+    """
+    Solve a logic puzzle and return the ordered solution.
+
+    Args:
+        puzzle: Description of the logic puzzle
+
+    Returns:
+        List of solutions in order
+    """
+    return emulate()
+
+puzzle = """
+Three people (Alice, Bob, Carol) finish a race.
+- Alice finishes before Bob
+- Carol finishes after Alice but before Bob
+What is the finishing order?
+"""
+
+result = solve_logic_puzzle(puzzle)
+print(result)  # ['Alice', 'Carol', 'Bob']
+```
+
+### Code Analysis
+
+Reasoning models can analyze code more thoroughly:
+
+```python
+from OpenHosta import emulate
+
+def find_bug(code: str) -> str:
+    """
+    Analyze code and identify potential bugs.
+
+    Args:
+        code: Source code to analyze
+
+    Returns:
+        Description of bugs found and how to fix them
+    """
+    return emulate()
+
+code_sample = """
+def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total += num
+    return total / len(numbers)
+"""
+
+analysis = find_bug(code_sample)
+print(analysis)
+# Will identify the division by zero issue when numbers is empty
+```
+
+### Complex Decision Making
+
+Multi-factor decisions with trade-offs:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List
+
+class Decision(BaseModel):
+    choice: str
+    reasoning: str
+    confidence: float
+
+def make_decision(scenario: str, options: List[str]) -> Decision:
+    """
+    Analyze a scenario and choose the best option with reasoning.
+
+    Args:
+        scenario: Description of the situation
+        options: List of possible choices
+
+    Returns:
+        The best choice with reasoning and confidence level
+    """
+    return emulate()
+
+scenario = """
+You need to choose a programming language for a new web project.
+Requirements: Fast development, good community support, easy deployment.
+Timeline: 3 months.
+"""
+
+decision = make_decision(scenario, ["Python", "JavaScript", "Go", "Rust"])
+print(f"Choice: {decision.choice}")
+print(f"Confidence: {decision.confidence}")
+print(f"Why: {decision.reasoning}")
+```
+
+## Debugging Reasoning Models
+
+### Print Last Decoding
+
+See how OpenHosta processed the reasoning:
+
+```python
+from OpenHosta import print_last_decoding
+
+def calculate(a: int, b: int) -> int:
+    """Calculate a complex formula."""
+    return emulate()
+
+result = calculate(5, 10)
+print_last_decoding(calculate)
+```
+
+This shows:
+- Raw LLM output (with reasoning)
+- Extracted answer
+- Type conversion steps
+
+### Inspect Reasoning Quality
+
+You can extract and analyze the reasoning separately if needed:
+
+```python
+from OpenHosta import emulate, config
+
+# Access the last raw response
+def sum_numbers(a: int, b: int) -> int:
+    """Sum two numbers."""
+    return emulate()
+
+result = sum_numbers(5, 7)
+
+# The raw response is stored in the pipeline
+# You can access it through the model's request history
+```
+
+## Performance Considerations
+
+<Info>
+**Trade-offs of Reasoning Models:**
+
+**Disadvantages:**
+- **⏰ Slower Response Time** - Reasoning adds 2-5x latency compared to direct answers
+- **💰 Higher Token Usage** - Reasoning content increases token consumption
+
+**Advantages:**
+- **🎯 Better Accuracy** - Significantly more accurate for complex tasks
+- **📖 Explainable Results** - Can inspect reasoning for debugging and trust
+</Info>
+
+### When to Use Reasoning Models
+
+<Tabs>
+  <Tab title="Use Reasoning Models">
+    - Complex mathematical problems
+    - Multi-step logic puzzles
+    - Code analysis and debugging
+    - Decision making with trade-offs
+    - Tasks requiring careful consideration
+    - When accuracy is more important than speed
+  </Tab>
+
+  <Tab title="Use Standard Models">
+    - Simple text transformations
+    - Direct fact lookups
+    - When speed is critical
+    - High-volume batch processing
+    - Cost-sensitive applications
+    - Simple classification tasks
+  </Tab>
+</Tabs>
+
+## Complete Example
+
+Here's a full example using a reasoning model for a complex task:
+
+```python
+from OpenHosta import OpenAICompatibleModel, config, emulate, print_last_prompt
+from pydantic import BaseModel
+from typing import List
+
+# Configure reasoning model
+reasoning_model = OpenAICompatibleModel(
+    base_url="http://localhost:11434/v1",
+    model_name="gpt-oss:20b",
+    timeout=240,
+    api_key="none"
+)
+
+config.DefaultModel = reasoning_model
+
+# Define complex task
+class Investment(BaseModel):
+    option: str
+    expected_return: float
+    risk_level: str
+    reasoning: str
+
+def analyze_investment(
+    amount: float,
+    time_horizon: int,
+    risk_tolerance: str
+) -> Investment:
+    """
+    Analyze investment options and recommend the best one.
+
+    Args:
+        amount: Amount to invest in USD
+        time_horizon: Investment period in years
+        risk_tolerance: 'low', 'medium', or 'high'
+
+    Returns:
+        Investment recommendation with analysis
+    """
+    return emulate()
+
+# Use it
+recommendation = analyze_investment(
+    amount=10000,
+    time_horizon=5,
+    risk_tolerance="medium"
+)
+
+print(f"Recommended: {recommendation.option}")
+print(f"Expected Return: {recommendation.expected_return}%")
+print(f"Risk: {recommendation.risk_level}")
+print(f"\nReasoning:\n{recommendation.reasoning}")
+
+# View the model's reasoning process
+print("\n" + "="*50)
+print("FULL REASONING PROCESS:")
+print("="*50)
+print_last_prompt(analyze_investment)
+```
+
+## Best Practices
+
+<Tip>
+**Best Practices for Reasoning Models:**
+
+- **⏳ Increase Timeouts** - Set timeout to 180-300 seconds
+- **🧠 Use for Complex Tasks** - Reserve for tasks that benefit from reasoning
+- **🌡️ Lower Temperature** - Use 0.1-0.5 for focused reasoning
+- **🔍 Inspect Reasoning** - Use print_last_prompt() to debug
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Custom Models" icon="sliders" href="/OpenHostaDocs/advanced/custom-models">
+    Configure more reasoning models
+  </Card>
+
+  <Card title="MetaPrompt" icon="pen-to-square" href="/OpenHostaDocs/advanced/metaprompt">
+    Customize prompts for reasoning models
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Use reasoning models asynchronously
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    See reasoning models in action
+  </Card>
+</CardGroup>

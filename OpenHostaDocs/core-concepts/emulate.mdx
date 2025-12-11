@@ -1,0 +1,307 @@
+---
+title: "emulate() Function"
+description: "AI-powered function implementation using natural language"
+icon: "brain"
+---
+
+## Overview
+
+The `emulate()` function is the core feature of OpenHosta. It allows you to define a function with a docstring and let AI implement it for you, bridging the gap between natural language and code execution.
+
+<Note>
+**Key Principle**: Write the function signature and docstring in plain language, then call `emulate()` to let AI handle the implementation.
+</Note>
+
+## Basic Usage
+
+```python
+from OpenHosta import emulate
+
+def translate(text: str, language: str) -> str:
+    """
+    This function translates the text into the specified language.
+    """
+    return emulate()
+
+result = translate("Hello World!", "French")
+print(result)
+# Output: Bonjour le monde !
+```
+
+## How It Works
+
+<Steps>
+  <Step title="Function Signature">
+    Define your function with type hints for parameters and return value
+  </Step>
+
+  <Step title="Docstring">
+    Write a clear description of what the function should do
+  </Step>
+
+  <Step title="Call emulate()">
+    Return the result of `emulate()` inside your function
+  </Step>
+
+  <Step title="AI Execution">
+    OpenHosta sends the context to the LLM and parses the response
+  </Step>
+</Steps>
+
+## Writing Effective Docstrings
+
+The docstring is crucial for `emulate()` to work correctly. Follow these best practices:
+
+### Be Clear and Specific
+
+<CodeGroup>
+
+```python Good Example
+def extract_email(text: str) -> str:
+    """
+    This function extracts the first email address found in the text.
+    If no email is found, returns None.
+    """
+    return emulate()
+```
+
+```python Bad Example
+def extract_email(text: str) -> str:
+    """
+    Gets email.
+    """
+    return emulate()
+```
+
+</CodeGroup>
+
+### Describe Input and Output
+
+```python
+def classify_sentiment(text: str) -> str:
+    """
+    This function analyzes the sentiment of the input text.
+
+    Args:
+        text: The text to analyze
+
+    Returns:
+        One of: "positive", "negative", or "neutral"
+    """
+    return emulate()
+```
+
+### Include Examples When Helpful
+
+```python
+def format_phone(number: str) -> str:
+    """
+    This function formats a phone number to international format.
+
+    Examples:
+    - Input: "0612345678" → Output: "+33 6 12 34 56 78"
+    - Input: "06-12-34-56-78" → Output: "+33 6 12 34 56 78"
+    """
+    return emulate()
+```
+
+## Type Annotations
+
+Type annotations help OpenHosta understand the expected input and output format:
+
+### Basic Types
+
+```python
+from OpenHosta import emulate
+
+def count_words(text: str) -> int:
+    """
+    This function counts the number of words in the text.
+    """
+    return emulate()
+
+def is_palindrome(text: str) -> bool:
+    """
+    This function checks if the text is a palindrome.
+    """
+    return emulate()
+```
+
+### Complex Types
+
+```python
+from typing import List, Dict, Tuple
+from OpenHosta import emulate
+
+def extract_keywords(text: str) -> List[str]:
+    """
+    This function extracts the main keywords from the text.
+    Returns a list of keywords.
+    """
+    return emulate()
+
+def analyze_text(text: str) -> Dict[str, int]:
+    """
+    This function analyzes the text and returns word frequencies.
+    Returns a dictionary with words as keys and their counts as values.
+    """
+    return emulate()
+```
+
+### Dataclasses
+
+```python
+from dataclasses import dataclass
+from OpenHosta import emulate
+
+@dataclass
+class Person:
+    name: str
+    age: int
+    city: str
+
+def extract_person_info(text: str) -> Person:
+    """
+    This function extracts person information from the text.
+    Returns a Person object with name, age, and city.
+    If information is missing, uses None.
+    """
+    return emulate()
+
+result = extract_person_info(
+    "John is 30 years old and lives in Paris"
+)
+print(result)
+# Output: Person(name='John', age=30, city='Paris')
+```
+
+## Advanced Options
+
+### Custom LLM Parameters
+
+You can pass additional parameters to the LLM using `force_llm_args`:
+
+```python
+from OpenHosta import emulate
+
+def creative_story(prompt: str) -> str:
+    """
+    This function generates a creative story based on the prompt.
+    """
+    return emulate(force_llm_args={
+        "temperature": 1.2,  # More creative
+        "max_tokens": 500    # Longer response
+    })
+```
+
+Common LLM parameters:
+- `temperature`: Controls randomness (0.0 = deterministic, 2.0 = very random)
+- `top_p`: Nucleus sampling parameter
+- `max_tokens`: Maximum length of response
+- `frequency_penalty`: Reduce repetition
+- `presence_penalty`: Encourage topic diversity
+
+### Multiple Parameters
+
+```python
+from OpenHosta import emulate
+
+def find_name_age(sentence: str, id: dict) -> dict:
+    """
+    This function finds names and ages in the text.
+
+    Args:
+        sentence: The text to search
+        id: A dictionary template to fill with information
+
+    Returns:
+        The dictionary filled with found information.
+        If information is not found, uses None.
+    """
+    return emulate()
+
+result = find_name_age(
+    "The captain is 23 and the cabin boy is 22",
+    {"captain": 0, "cabin boy": 0}
+)
+print(result)
+# Output: {'captain': 23, 'cabin boy': 22}
+```
+
+## Debugging
+
+### Print the Prompt
+
+See what prompt was sent to the LLM:
+
+```python
+from OpenHosta import emulate, print_last_prompt
+
+def multiply(a: int, b: int) -> int:
+    """
+    This function multiplies two numbers.
+    """
+    return emulate()
+
+result = multiply(5, 6)
+print_last_prompt(multiply)
+```
+
+### Print the Response
+
+See the raw LLM response and parsing steps:
+
+```python
+from OpenHosta import emulate, print_last_response, print_last_decoding
+
+def add(a: int, b: int) -> int:
+    """
+    This function adds two numbers.
+    """
+    return emulate()
+
+result = add(5, 3)
+print_last_response(add)
+print_last_decoding(add)
+```
+
+## Best Practices
+
+<Tip>
+**emulate() Best Practices:**
+
+- **✅ Use Type Hints** - Always annotate parameters and return types for better results
+- **💬 Clear Docstrings** - Write descriptive docstrings that explain the function's purpose
+- **🧪 Test Edge Cases** - Test your functions with various inputs to ensure reliability
+- **⚠️ Handle None Values** - Mention in docstring what to return when information is missing
+</Tip>
+
+## Performance Tips
+
+<Tip>
+**Caching**: For repeated calls with the same parameters, consider implementing your own caching layer to avoid redundant LLM calls.
+</Tip>
+
+<Warning>
+**Costs**: Each `emulate()` call makes an API request. Be mindful of usage when using cloud models.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Types & Pydantic" icon="shapes" href="/OpenHostaDocs/advanced/types-pydantic">
+    Learn about advanced type support
+  </Card>
+
+  <Card title="Async Mode" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Use emulate() asynchronously
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    Browse real-world examples
+  </Card>
+
+  <Card title="MetaPrompt" icon="pen" href="/OpenHostaDocs/advanced/metaprompt">
+    Customize how OpenHosta talks to LLMs
+  </Card>
+</CardGroup>

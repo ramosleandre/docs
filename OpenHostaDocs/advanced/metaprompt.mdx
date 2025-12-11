@@ -1,0 +1,441 @@
+---
+title: "MetaPrompt Customization"
+description: "Customize how OpenHosta communicates with LLMs using Jinja2 templates"
+icon: "pen-to-square"
+---
+
+## Overview
+
+The `MetaPrompt` class is OpenHosta's powerful template system that defines how your functions are presented to the LLM. It uses Jinja2 templating to create flexible, customizable prompts.
+
+<Info>
+MetaPrompts are the secret sauce that makes OpenHosta work. They translate your Python function definitions into clear instructions for the LLM.
+</Info>
+
+## What is a MetaPrompt?
+
+A MetaPrompt is a Jinja2 template that formats how your function definition, docstring, and arguments are sent to the LLM. OpenHosta uses two main MetaPrompts:
+
+<Info>
+**MetaPrompt Types:**
+
+- **⚙️ System MetaPrompt** - Defines the LLM's role and includes the function definition
+- **👤 User MetaPrompt** - Formats the function call with actual argument values
+</Info>
+
+## Viewing Default MetaPrompts
+
+You can inspect the default MetaPrompts used by OpenHosta:
+
+```python
+from OpenHosta import config
+
+# View the system MetaPrompt (emulate)
+print(config.DefaultPipeline.emulate_meta_prompt)
+
+# View the user call MetaPrompt
+print(config.DefaultPipeline.user_call_meta_prompt)
+```
+
+<Accordion title="Example Default User MetaPrompt">
+```jinja2
+{% if variables_initialization %}# Values of parameters to be used
+{{ variables_initialization }}{% endif %}
+{{ function_name }}({{ function_call_arguments }})
+```
+
+This template shows how function calls are formatted with their arguments.
+</Accordion>
+
+## Creating Custom MetaPrompts
+
+### Basic MetaPrompt
+
+Create a custom MetaPrompt using the `MetaPrompt` class:
+
+```python
+from OpenHosta import MetaPrompt
+
+# Create a simple MetaPrompt
+my_prompt = MetaPrompt("""
+You are a helpful assistant that processes function calls.
+The function to execute is: {{ function_name }}
+Please provide the result.
+""")
+
+print(my_prompt)
+# Output (with dedent applied):
+# You are a helpful assistant that processes function calls.
+# The function to execute is: {{ function_name }}
+# Please provide the result.
+```
+
+<Note>
+MetaPrompt automatically applies `textwrap.dedent()` to remove leading indentation, making your code more readable.
+</Note>
+
+### Rendering with Variables
+
+MetaPrompts use Jinja2 syntax for variable substitution:
+
+```python
+from OpenHosta import MetaPrompt
+
+prompt = MetaPrompt("""
+Analyze the function '{{ function_name }}' with {{ arg_count }} arguments.
+Task type: {{ task_type }}
+""")
+
+rendered = prompt.render(
+    function_name="calculate_sum",
+    arg_count=2,
+    task_type="mathematical operation"
+)
+
+print(rendered)
+# Analyze the function 'calculate_sum' with 2 arguments.
+# Task type: mathematical operation
+```
+
+## Available Template Variables
+
+When OpenHosta renders MetaPrompts, it provides several variables you can use:
+
+### System MetaPrompt Variables
+
+<ParamField path="function_name" type="string">
+  The name of the function being emulated
+</ParamField>
+
+<ParamField path="function_signature" type="string">
+  Complete function signature with type hints
+</ParamField>
+
+<ParamField path="docstring" type="string">
+  The function's docstring
+</ParamField>
+
+<ParamField path="return_type" type="string">
+  The annotated return type
+</ParamField>
+
+### User MetaPrompt Variables
+
+<ParamField path="function_name" type="string">
+  The name of the function being called
+</ParamField>
+
+<ParamField path="function_call_arguments" type="string">
+  Formatted argument string (e.g., "a=5, b=10")
+</ParamField>
+
+<ParamField path="variables_initialization" type="string">
+  Variable definitions if needed
+</ParamField>
+
+## Customizing the Default Pipeline
+
+### Modifying User MetaPrompt
+
+Change how function calls are presented:
+
+```python
+from OpenHosta import config, MetaPrompt
+
+# Add a note to prevent certain model behaviors
+# This example was useful for Qwen models that tend to "think" too much
+config.DefaultPipeline.user_call_meta_prompt.source += "\n/no_think"
+
+# Or create a completely new user MetaPrompt
+config.DefaultPipeline.user_call_meta_prompt = MetaPrompt("""
+Execute: {{ function_name }}({{ function_call_arguments }})
+Return only the result, no explanation.
+""")
+```
+
+### Modifying System MetaPrompt
+
+Change how the function definition is presented:
+
+```python
+from OpenHosta import config, MetaPrompt
+
+custom_system_prompt = MetaPrompt("""
+You are an AI assistant specialized in {{ domain }}.
+
+Function to simulate:
+```python
+{{ function_signature }}
+    \"\"\"{{ docstring }}\"\"\"
+```
+
+Respond with only the return value in the correct format.
+""")
+
+config.DefaultPipeline.emulate_meta_prompt = custom_system_prompt
+```
+
+## Advanced Use Cases
+
+### Domain-Specific Prompts
+
+Create specialized prompts for specific domains:
+
+```python
+from OpenHosta import MetaPrompt, config, emulate
+
+# Medical domain prompt
+medical_prompt = MetaPrompt("""
+You are a medical information assistant. Analyze the following function
+with care and precision, ensuring accuracy is paramount.
+
+Function: {{ function_name }}
+{{ docstring }}
+
+Provide accurate, evidence-based results.
+""")
+
+config.DefaultPipeline.emulate_meta_prompt = medical_prompt
+
+def analyze_symptoms(symptoms: str) -> str:
+    """
+    Analyze the provided symptoms and suggest possible conditions.
+    This is for informational purposes only, not medical advice.
+    """
+    return emulate()
+```
+
+### Multi-Language Support
+
+Adapt prompts for different languages:
+
+```python
+from OpenHosta import MetaPrompt, config
+
+# French system prompt
+french_prompt = MetaPrompt("""
+Vous êtes un assistant IA qui simule des fonctions Python.
+
+Fonction à émuler:
+{{ function_signature }}
+    \"\"\"{{ docstring }}\"\"\"
+
+Répondez uniquement avec la valeur de retour.
+""")
+
+config.DefaultPipeline.emulate_meta_prompt = french_prompt
+```
+
+### Adding Context and Examples
+
+Include examples in your MetaPrompt:
+
+```python
+from OpenHosta import MetaPrompt, config
+
+prompt_with_examples = MetaPrompt("""
+You are a function simulator. Here are examples of how to respond:
+
+Example 1:
+Function: add(a: int, b: int) -> int
+Call: add(2, 3)
+Response: 5
+
+Example 2:
+Function: extract_email(text: str) -> str
+Call: extract_email("Contact: john@example.com")
+Response: john@example.com
+
+Now simulate this function:
+{{ function_signature }}
+    \"\"\"{{ docstring }}\"\"\"
+""")
+
+config.DefaultPipeline.emulate_meta_prompt = prompt_with_examples
+```
+
+## Debugging MetaPrompts
+
+### Print the Final Prompt
+
+See what's actually sent to the LLM:
+
+```python
+from OpenHosta import emulate, print_last_prompt
+
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers."""
+    return emulate()
+
+result = multiply(5, 6)
+
+# Print the complete conversation
+print_last_prompt(multiply)
+```
+
+This will show:
+- The model configuration
+- The system prompt (rendered MetaPrompt)
+- The user prompt (rendered call)
+- Any reasoning (for reasoning models)
+- The LLM response
+
+### Testing MetaPrompt Rendering
+
+Test your MetaPrompt before using it:
+
+```python
+from OpenHosta import MetaPrompt
+
+prompt = MetaPrompt("""
+Function: {{ function_name }}
+Type: {{ function_type }}
+""")
+
+# Test rendering
+test_render = prompt.render(
+    function_name="test_function",
+    function_type="string processor"
+)
+
+print(test_render)
+```
+
+## Real-World Example
+
+Here's a complete example showing MetaPrompt customization in action:
+
+```python
+from OpenHosta import config, MetaPrompt, emulate
+
+# Create a specialized prompt for code explanation
+code_explainer_prompt = MetaPrompt("""
+You are a code documentation assistant. Your task is to simulate
+Python functions by understanding their intent and providing results.
+
+Function details:
+Name: {{ function_name }}
+Signature: {{ function_signature }}
+Description: {{ docstring }}
+
+Important: Return values must match the specified return type exactly.
+For complex types, ensure proper JSON formatting.
+""")
+
+# Set as default
+config.DefaultPipeline.emulate_meta_prompt = code_explainer_prompt
+
+# Also customize the user prompt for clarity
+config.DefaultPipeline.user_call_meta_prompt = MetaPrompt("""
+EXECUTE FUNCTION CALL:
+{{ function_name }}({{ function_call_arguments }})
+
+OUTPUT (return value only):
+""")
+
+# Now use with a function
+def summarize_code(code: str, max_length: int) -> str:
+    """
+    Create a concise summary of the provided code.
+
+    Args:
+        code: The source code to summarize
+        max_length: Maximum length of summary in characters
+
+    Returns:
+        A clear, concise summary of what the code does
+    """
+    return emulate()
+
+example_code = """
+def fibonacci(n):
+    if n <= 1:
+        return n
+    return fibonacci(n-1) + fibonacci(n-2)
+"""
+
+summary = summarize_code(example_code, 100)
+print(summary)
+# "Recursive function that calculates the nth Fibonacci number"
+
+# Debug: see what was sent
+from OpenHosta import print_last_prompt
+print_last_prompt(summarize_code)
+```
+
+## Jinja2 Features
+
+MetaPrompts support full Jinja2 syntax:
+
+### Conditionals
+
+```python
+from OpenHosta import MetaPrompt
+
+prompt = MetaPrompt("""
+{% if has_docstring %}
+Function documentation: {{ docstring }}
+{% else %}
+No documentation provided.
+{% endif %}
+""")
+```
+
+### Loops
+
+```python
+from OpenHosta import MetaPrompt
+
+prompt = MetaPrompt("""
+Arguments:
+{% for arg in arguments %}
+- {{ arg.name }}: {{ arg.type }}
+{% endfor %}
+""")
+```
+
+### Filters
+
+```python
+from OpenHosta import MetaPrompt
+
+prompt = MetaPrompt("""
+Function: {{ function_name | upper }}
+Type: {{ return_type | lower }}
+""")
+```
+
+## Best Practices
+
+<Tip>
+**MetaPrompt Best Practices:**
+
+- **👁️ Keep It Clear** - Write prompts that are easy for LLMs to understand
+- **🔄 Test Iterations** - Test different prompts to find what works best
+- **🎯 Be Specific** - Specify exact output formats when needed
+- **📝 Use Examples** - Include examples for complex tasks
+</Tip>
+
+<Warning>
+Changing MetaPrompts affects all subsequent function calls. Test thoroughly before using in production.
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Custom Models" icon="sliders" href="/OpenHostaDocs/advanced/custom-models">
+    Combine custom MetaPrompts with custom models
+  </Card>
+
+  <Card title="Reasoning Models" icon="brain" href="/OpenHostaDocs/advanced/reasoning-models">
+    Use MetaPrompts with reasoning models
+  </Card>
+
+  <Card title="emulate() Function" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Learn more about the emulate function
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    See MetaPrompts in practical examples
+  </Card>
+</CardGroup>

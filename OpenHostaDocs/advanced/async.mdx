@@ -1,0 +1,392 @@
+---
+title: "Async Support"
+description: "Use OpenHosta functions asynchronously for parallel execution and better performance"
+icon: "bolt"
+---
+
+## Overview
+
+OpenHosta provides full asynchronous support for all core functions, enabling parallel execution and seamless integration with async Python applications like web servers and bots.
+
+<Info>
+Async mode is particularly useful when making multiple LLM calls in parallel, significantly improving performance and reducing total execution time.
+</Info>
+
+## Available Async Functions
+
+All major OpenHosta functions support asynchronous execution:
+
+<Info>
+**Available Async Functions:**
+
+- **🧠 emulate()** - AI-powered function implementation
+- **💬 ask()** - Simple LLM queries
+- **⚙️ closure()** - Lambda-style AI functions
+- **🧪 test()** - Semantic testing
+</Info>
+
+## Importing Async Functions
+
+There are two ways to import async functions:
+
+### Method 1: Import from asynchrone module
+
+```python
+from OpenHosta.asynchrone import emulate, ask, test, closure
+
+# All imported functions are async versions
+```
+
+### Method 2: Import both sync and async
+
+```python
+from OpenHosta import emulate, emulate_async, ask, ask_async
+
+# Use emulate for sync, emulate_async for async
+```
+
+<Tip>
+Use Method 1 if your entire module is async. Use Method 2 when you need to mix synchronous and asynchronous code in the same file.
+</Tip>
+
+## Basic Async Usage
+
+### Simple Async Function
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+
+async def capitalize_cities(sentence: str) -> str:
+    """
+    Capitalize the first letter of all city names in a sentence.
+    """
+    return await emulate()
+
+# Run from a script
+result = asyncio.run(capitalize_cities("je suis allé à londres et los angeles en juin"))
+print(result)
+# 'je suis allé à Londres et Los Angeles en juin'
+```
+
+### Running in Different Environments
+
+<Tabs>
+  <Tab title="Standard Python">
+    Use `asyncio.run()` for standard Python scripts:
+
+    ```python
+    import asyncio
+    from OpenHosta.asynchrone import emulate
+
+    async def translate(text: str, language: str) -> str:
+        """Translate text to the specified language."""
+        return await emulate()
+
+    # Run the async function
+    result = asyncio.run(translate("Hello", "French"))
+    print(result)  # Bonjour
+    ```
+  </Tab>
+
+  <Tab title="Jupyter/Colab">
+    In Jupyter notebooks or Google Colab, use `await` directly:
+
+    ```python
+    from OpenHosta.asynchrone import emulate
+
+    async def translate(text: str, language: str) -> str:
+        """Translate text to the specified language."""
+        return await emulate()
+
+    # Direct await in notebook
+    result = await translate("Hello", "French")
+    print(result)  # Bonjour
+    ```
+  </Tab>
+
+  <Tab title="FastAPI">
+    Integrate seamlessly with FastAPI endpoints:
+
+    ```python
+    from fastapi import FastAPI
+    from OpenHosta.asynchrone import emulate
+
+    app = FastAPI()
+
+    async def analyze_sentiment(text: str) -> str:
+        """Analyze the sentiment of the text."""
+        return await emulate()
+
+    @app.post("/analyze")
+    async def analyze_endpoint(text: str):
+        sentiment = await analyze_sentiment(text)
+        return {"sentiment": sentiment}
+    ```
+  </Tab>
+</Tabs>
+
+## Parallel Execution
+
+The real power of async comes from running multiple operations in parallel:
+
+### Multiple Independent Calls
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from typing import List
+
+async def translate(text: str, language: str) -> str:
+    """Translate text to the specified language."""
+    return await emulate()
+
+async def translate_multiple():
+    # Run translations in parallel
+    results = await asyncio.gather(
+        translate("Hello", "French"),
+        translate("Hello", "Spanish"),
+        translate("Hello", "German"),
+        translate("Hello", "Italian")
+    )
+    return results
+
+# Execute all at once
+translations = asyncio.run(translate_multiple())
+print(translations)
+# ['Bonjour', 'Hola', 'Hallo', 'Ciao']
+```
+
+<Check>
+Using `asyncio.gather()` allows all LLM calls to run in parallel, dramatically reducing total execution time compared to sequential calls.
+</Check>
+
+### Processing Lists Concurrently
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from typing import List
+
+async def analyze_sentiment(text: str) -> str:
+    """Determine if the text is positive, negative, or neutral."""
+    return await emulate()
+
+async def analyze_batch(texts: List[str]) -> List[str]:
+    # Process all texts in parallel
+    tasks = [analyze_sentiment(text) for text in texts]
+    return await asyncio.gather(*tasks)
+
+texts = [
+    "I love this product!",
+    "This is terrible.",
+    "It's okay, nothing special.",
+    "Amazing experience!"
+]
+
+results = asyncio.run(analyze_batch(texts))
+print(results)
+# ['positive', 'negative', 'neutral', 'positive']
+```
+
+## Async with Other Functions
+
+### Async ask()
+
+```python
+import asyncio
+from OpenHosta.asynchrone import ask
+
+async def get_information():
+    response = await ask("What is the capital of France?")
+    return response
+
+result = asyncio.run(get_information())
+print(result)
+```
+
+### Async test()
+
+```python
+import asyncio
+from OpenHosta.asynchrone import test
+
+async def check_content(text: str):
+    is_appropriate = await test(f"This text is appropriate for children: {text}")
+    return is_appropriate
+
+result = asyncio.run(check_content("Hello, how are you?"))
+print(result)  # True
+```
+
+### Async closure()
+
+```python
+import asyncio
+from OpenHosta.asynchrone import closure
+
+async def use_closure():
+    multiply = await closure("Multiply by two")
+    result = await multiply(5)
+    return result
+
+result = asyncio.run(use_closure())
+print(result)  # 10
+```
+
+## Error Handling
+
+Always use try-except blocks for robust error handling in async functions:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+
+async def safe_translate(text: str, language: str) -> str:
+    """Translate text to the specified language."""
+    return await emulate()
+
+async def translate_with_fallback(text: str, language: str) -> str:
+    try:
+        result = await safe_translate(text, language)
+        return result
+    except Exception as e:
+        print(f"Translation failed: {e}")
+        return text  # Return original text as fallback
+
+result = asyncio.run(translate_with_fallback("Hello", "French"))
+```
+
+## Timeouts
+
+Set timeouts for async operations to prevent hanging:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+
+async def translate(text: str, language: str) -> str:
+    """Translate text to the specified language."""
+    return await emulate()
+
+async def translate_with_timeout(text: str, language: str, timeout: int = 30):
+    try:
+        result = await asyncio.wait_for(
+            translate(text, language),
+            timeout=timeout
+        )
+        return result
+    except asyncio.TimeoutError:
+        return f"Translation timed out after {timeout} seconds"
+
+result = asyncio.run(translate_with_timeout("Hello", "French", timeout=10))
+```
+
+## Real-World Example: Web Application
+
+Here's a complete example using FastAPI and async OpenHosta:
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
+import asyncio
+from OpenHosta.asynchrone import emulate
+
+app = FastAPI()
+
+class TranslationRequest(BaseModel):
+    texts: List[str]
+    target_language: str
+
+class TranslationResponse(BaseModel):
+    translations: List[str]
+
+async def translate_single(text: str, language: str) -> str:
+    """Translate a single text to the target language."""
+    return await emulate()
+
+@app.post("/translate", response_model=TranslationResponse)
+async def translate_batch(request: TranslationRequest):
+    try:
+        # Process all translations in parallel
+        tasks = [
+            translate_single(text, request.target_language)
+            for text in request.texts
+        ]
+        translations = await asyncio.gather(*tasks)
+
+        return TranslationResponse(translations=translations)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+```
+
+## Performance Comparison
+
+<Note>
+**Performance Comparison:**
+
+- **⏳ Sequential Execution** - 10 calls × 2 seconds each = 20 seconds total
+- **🚀 Parallel Execution** - 10 calls in parallel = ~2 seconds total
+</Note>
+
+```python
+import asyncio
+import time
+from OpenHosta import emulate
+from OpenHosta.asynchrone import emulate as emulate_async
+
+# Sequential
+def sequential():
+    start = time.time()
+    for i in range(5):
+        def count(n: int) -> int:
+            """Return the number plus one."""
+            return emulate()
+        count(i)
+    return time.time() - start
+
+# Parallel
+async def parallel():
+    start = time.time()
+    async def count(n: int) -> int:
+        """Return the number plus one."""
+        return await emulate_async()
+
+    await asyncio.gather(*[count(i) for i in range(5)])
+    return time.time() - start
+
+print(f"Sequential: {sequential():.2f}s")
+print(f"Parallel: {asyncio.run(parallel()):.2f}s")
+```
+
+## Best Practices
+
+<Tip>
+**Async Best Practices:**
+
+- **📚 Use for Multiple Calls** - Async shines when making multiple LLM calls in parallel
+- **⏰ Set Timeouts** - Always use timeouts to prevent hanging operations
+- **🛡️ Handle Errors** - Use try-except blocks for robust error handling
+- **🖥️ Consider Your Environment** - Use appropriate async patterns for your runtime environment
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Types & Pydantic" icon="shield-check" href="/OpenHostaDocs/advanced/types-pydantic">
+    Learn about type safety with async functions
+  </Card>
+
+  <Card title="Custom Models" icon="sliders" href="/OpenHostaDocs/advanced/custom-models">
+    Configure custom LLM providers
+  </Card>
+
+  <Card title="Text Processing" icon="file-lines" href="/OpenHostaDocs/examples/text-processing">
+    See async in action with examples
+  </Card>
+
+  <Card title="emulate() Function" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Learn more about the emulate function
+  </Card>
+</CardGroup>

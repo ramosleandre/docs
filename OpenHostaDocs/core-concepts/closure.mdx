@@ -1,0 +1,389 @@
+---
+title: "closure() Function"
+description: "Lambda-style AI functions for quick operations"
+icon: "function"
+---
+
+## Overview
+
+The `closure()` function provides a lambda-like interface for creating quick, anonymous AI-powered functions. It's inspired by Python's `lambda` keyword but with AI capabilities.
+
+<Note>
+Think of `closure()` as a one-liner AI function - perfect for simple transformations and operations.
+</Note>
+
+## Basic Usage
+
+```python
+from OpenHosta import closure
+
+# Create and use in one line
+result = closure("Multiply by two")(5)
+print(result)  # 10
+
+# Or store for reuse
+double = closure("Multiply by two")
+print(double(3))  # 6
+print(double(7))  # 14
+```
+
+## How It Works
+
+<Steps>
+  <Step title="Define Operation">
+    Describe the operation in natural language
+  </Step>
+
+  <Step title="Type Inference">
+    OpenHosta infers the return type on first use
+  </Step>
+
+  <Step title="Call with Arguments">
+    Pass arguments to execute the operation
+  </Step>
+
+  <Step title="AI Execution">
+    The LLM performs the operation and returns the result
+  </Step>
+</Steps>
+
+## Use Cases
+
+### Text Transformations
+
+```python
+from OpenHosta import closure
+
+# Create transformers
+capitalize_cities = closure("Capitalize all city names")
+text = "I visited london and paris last summer"
+result = capitalize_cities(text)
+print(result)
+# Output: "I visited London and Paris last summer"
+
+# Remove punctuation
+clean_text = closure("Remove all punctuation marks")
+messy = "Hello, world! How are you?"
+clean = clean_text(messy)
+print(clean)
+# Output: "Hello world How are you"
+```
+
+### Data Processing
+
+```python
+from OpenHosta import closure
+
+# Extract specific information
+extract_emails = closure("Extract all email addresses and return as a list")
+text = "Contact us at info@example.com or support@test.org"
+emails = extract_emails(text)
+print(emails)
+# Output: ['info@example.com', 'support@test.org']
+
+# Summarize text
+summarize = closure("Create a one-sentence summary")
+long_text = """
+The quick brown fox jumps over the lazy dog. This is a classic
+pangram used for testing fonts and keyboards...
+"""
+summary = summarize(long_text)
+print(summary)
+```
+
+### Sentiment Analysis
+
+```python
+from OpenHosta import closure
+
+get_sentiment = closure("Return the sentiment as positive, negative, or neutral")
+
+reviews = [
+    "This product is amazing!",
+    "Terrible experience, would not recommend.",
+    "It's okay, nothing special."
+]
+
+sentiments = [get_sentiment(review) for review in reviews]
+print(sentiments)
+# Output: ['positive', 'negative', 'neutral']
+```
+
+### Boolean Checks
+
+```python
+from OpenHosta import closure
+
+is_masculine_name = closure("Check if this is a masculine name")
+
+names = ["John", "Mary", "Michael", "Sarah"]
+for name in names:
+    if is_masculine_name(name):
+        print(f"{name}: masculine")
+    else:
+        print(f"{name}: feminine")
+```
+
+## Advanced Usage
+
+### Multiple Arguments
+
+```python
+from OpenHosta import closure
+
+# Works with multiple arguments
+add_all = closure("Add all the integers together")
+total = add_all(5, 10, 15, 20)
+print(total)  # 50
+
+# String formatting
+format_name = closure("Format as 'Last, First'")
+full_name = format_name("John", "Doe")
+print(full_name)  # "Doe, John"
+```
+
+### Complex Operations
+
+```python
+from OpenHosta import closure
+
+# Data extraction and transformation
+parse_date = closure("Convert date to ISO format (YYYY-MM-DD)")
+dates = [
+    "March 15, 2024",
+    "12/25/2023",
+    "01-05-2024"
+]
+
+iso_dates = [parse_date(d) for d in dates]
+print(iso_dates)
+# Output: ['2024-03-15', '2023-12-25', '2024-01-05']
+```
+
+### Type Inference
+
+The first call to a `closure()` infers the return type:
+
+```python
+from OpenHosta import closure
+
+# First call infers the type
+word_counter = closure("Count the number of words")
+
+# Returns integer after type inference
+count = word_counter("Hello world this is a test")
+print(type(count))  # <class 'int'>
+print(count)  # 6
+
+# Subsequent calls use the cached type
+count2 = word_counter("Another sentence")
+print(count2)  # 2
+```
+
+<Warning>
+The first call may be slower due to type inference. Subsequent calls are faster as the type is cached.
+</Warning>
+
+## Comparison with Lambda
+
+### Python Lambda
+
+```python
+# Traditional lambda
+double = lambda x: x * 2
+result = double(5)  # 10
+
+# Limited to simple expressions
+uppercase = lambda s: s.upper()
+```
+
+### OpenHosta Closure
+
+```python
+from OpenHosta import closure
+
+# AI-powered closure
+intelligent_double = closure("Multiply by two")
+result = intelligent_double(5)  # 10
+
+# Can handle complex natural language operations
+smart_uppercase = closure("Convert to uppercase and remove all numbers")
+result = smart_uppercase("hello123world456")  # "HELLOWORLD"
+```
+
+## Best Practices
+
+### Clear and Concise Descriptions
+
+<CodeGroup>
+
+```python Good Example
+extract_numbers = closure("Extract all numbers and return as a list")
+```
+
+```python Bad Example
+do_something = closure("Do stuff with numbers")  # Too vague
+```
+
+</CodeGroup>
+
+### Use for Simple Operations
+
+```python
+# Good use case: Simple, clear transformation
+capitalize = closure("Capitalize first letter of each word")
+
+# Not ideal: Complex multi-step logic
+# Consider using emulate() with a full function instead
+complex_op = closure("""
+    First extract all dates, then convert to ISO format,
+    then sort them, then group by month, then...
+""")  # Too complex for closure()
+```
+
+### Reuse Closures
+
+```python
+from OpenHosta import closure
+
+# Define once, use many times
+clean_email = closure("Convert to lowercase and remove whitespace")
+
+emails = [
+    "  JOHN@EXAMPLE.COM  ",
+    "Mary@Test.ORG",
+    "  admin@site.COM  "
+]
+
+cleaned = [clean_email(email) for email in emails]
+print(cleaned)
+# Output: ['john@example.com', 'mary@test.org', 'admin@site.com']
+```
+
+## Performance Considerations
+
+<Tip>
+**First Call Overhead**: The first call to a closure includes type inference, making it slower. Subsequent calls are faster.
+
+```python
+# First call: ~2 seconds (includes type inference)
+result1 = word_count("hello world")
+
+# Subsequent calls: ~0.5 seconds (type cached)
+result2 = word_count("another sentence")
+```
+</Tip>
+
+<Warning>
+**API Costs**: Each closure call makes an API request. For high-frequency operations, consider using `emulate()` with caching instead.
+</Warning>
+
+## When to Use Each Function
+
+<Note>
+**Choosing Between closure() and emulate():**
+
+**⚙️ Use closure() for:**
+- Quick one-off operations
+- Simple transformations
+- Inline operations
+- Interactive exploration
+
+**🧠 Use emulate() for:**
+- Complex operations
+- Type-safe functions
+- Reusable components
+- Production code
+</Note>
+
+## Async Support
+
+For concurrent processing:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import closure
+
+async def process_reviews(reviews):
+    get_sentiment = closure("Return sentiment as positive, negative, or neutral")
+
+    # Process all reviews concurrently
+    results = await asyncio.gather(*[
+        get_sentiment(review) for review in reviews
+    ])
+
+    return results
+
+reviews = [
+    "Great product!",
+    "Terrible experience",
+    "It's okay"
+]
+
+sentiments = await process_reviews(reviews)
+print(sentiments)
+```
+
+<Card title="Async Guide" icon="bolt" href="/OpenHostaDocs/advanced/async" horizontal>
+  Learn more about asynchronous operations
+</Card>
+
+## Real-World Example
+
+```python
+from OpenHosta import closure
+
+class DataCleaner:
+    """AI-powered data cleaning utilities"""
+
+    def __init__(self):
+        self.trim = closure("Remove leading and trailing whitespace")
+        self.normalize_phone = closure("Convert to format: +XX XXX XXX XXXX")
+        self.extract_domain = closure("Extract domain from email address")
+
+    def clean_contact(self, data):
+        """Clean contact information"""
+        return {
+            'name': self.trim(data['name']),
+            'phone': self.normalize_phone(data['phone']),
+            'email': self.trim(data['email'].lower()),
+            'domain': self.extract_domain(data['email'])
+        }
+
+# Usage
+cleaner = DataCleaner()
+contact = {
+    'name': '  John Doe  ',
+    'phone': '0612345678',
+    'email': '  JOHN@EXAMPLE.COM  '
+}
+
+cleaned = cleaner.clean_contact(contact)
+print(cleaned)
+# {
+#     'name': 'John Doe',
+#     'phone': '+33 612 345 678',
+#     'email': 'john@example.com',
+#     'domain': 'example.com'
+# }
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="emulate()" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    For complex, type-safe functions
+  </Card>
+
+  <Card title="test()" icon="vial" href="/OpenHostaDocs/core-concepts/test">
+    For boolean semantic tests
+  </Card>
+
+  <Card title="ask()" icon="comments" href="/OpenHostaDocs/core-concepts/ask">
+    For simple LLM queries
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Use closure() asynchronously
+  </Card>
+</CardGroup>

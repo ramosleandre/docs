@@ -1,0 +1,636 @@
+---
+title: "Text Processing Examples"
+description: "Real-world examples of text processing, translation, and analysis with OpenHosta"
+icon: "file-lines"
+---
+
+## Overview
+
+Text processing is one of the most powerful use cases for OpenHosta. This page demonstrates practical examples of translation, sentiment analysis, text transformation, and more.
+
+<Note>
+These examples work with any configured LLM provider - OpenAI, Ollama, Azure, or custom models.
+</Note>
+
+## Translation
+
+### Basic Translation
+
+The classic example of AI-powered text processing:
+
+```python
+from OpenHosta import emulate
+
+def translate(text: str, language: str) -> str:
+    """
+    Translate text into the specified language.
+
+    Args:
+        text: The text to translate
+        language: Target language (e.g., "French", "Spanish", "Japanese")
+
+    Returns:
+        The translated text
+    """
+    return emulate()
+
+result = translate("Hello World!", "French")
+print(result)
+# Bonjour le monde !
+```
+
+### Batch Translation
+
+Process multiple texts in parallel using async:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from typing import List
+
+async def translate(text: str, language: str) -> str:
+    """Translate text into the specified language."""
+    return await emulate()
+
+async def translate_batch(texts: List[str], language: str) -> List[str]:
+    """Translate multiple texts in parallel."""
+    tasks = [translate(text, language) for text in texts]
+    return await asyncio.gather(*tasks)
+
+texts = [
+    "Hello, how are you?",
+    "The weather is nice today.",
+    "I love programming!"
+]
+
+results = asyncio.run(translate_batch(texts, "Spanish"))
+for original, translated in zip(texts, results):
+    print(f"{original} → {translated}")
+
+# Hello, how are you? → Hola, ¿cómo estás?
+# The weather is nice today. → El clima está agradable hoy.
+# I love programming! → ¡Me encanta programar!
+```
+
+### Context-Aware Translation
+
+Maintain context and tone in translations:
+
+```python
+from OpenHosta import emulate
+
+def translate_with_context(
+    text: str,
+    language: str,
+    tone: str = "neutral"
+) -> str:
+    """
+    Translate text while preserving the specified tone.
+
+    Args:
+        text: The text to translate
+        language: Target language
+        tone: Desired tone (formal, casual, friendly, professional)
+
+    Returns:
+        Translated text with appropriate tone
+    """
+    return emulate()
+
+formal = translate_with_context(
+    "Hey, can you send me that file?",
+    "French",
+    "formal"
+)
+print(formal)
+# Pourriez-vous m'envoyer ce fichier, s'il vous plaît ?
+
+casual = translate_with_context(
+    "Hey, can you send me that file?",
+    "French",
+    "casual"
+)
+print(casual)
+# Hé, tu peux m'envoyer ce fichier ?
+```
+
+## Sentiment Analysis
+
+### Basic Sentiment Detection
+
+Classify text sentiment:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+
+class Sentiment(Enum):
+    POSITIVE = "positive"
+    NEGATIVE = "negative"
+    NEUTRAL = "neutral"
+
+def analyze_sentiment(text: str) -> Sentiment:
+    """
+    Analyze the sentiment expressed in the text.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        Sentiment classification
+    """
+    return emulate()
+
+reviews = [
+    "This product is amazing! Best purchase ever!",
+    "Terrible quality, broke after one day.",
+    "It's okay, nothing special."
+]
+
+for review in reviews:
+    sentiment = analyze_sentiment(review)
+    print(f"{review[:40]}... → {sentiment.value}")
+
+# This product is amazing! Best purchase e... → positive
+# Terrible quality, broke after one day. → negative
+# It's okay, nothing special. → neutral
+```
+
+### Detailed Sentiment Analysis
+
+Get more nuanced sentiment information:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, Field
+
+class DetailedSentiment(BaseModel):
+    overall: str = Field(description="positive, negative, or neutral")
+    confidence: float = Field(description="Confidence score 0-1")
+    emotions: list[str] = Field(description="Detected emotions")
+    aspects: dict[str, str] = Field(description="Sentiment per aspect")
+
+def analyze_sentiment_detailed(text: str) -> DetailedSentiment:
+    """
+    Perform detailed sentiment analysis on text.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        Detailed sentiment information including emotions and aspect-based sentiment
+    """
+    return emulate()
+
+review = """
+The camera quality is excellent, and the battery life exceeded my expectations.
+However, the user interface is confusing and the customer service was unhelpful.
+Overall, I'm satisfied with the purchase.
+"""
+
+analysis = analyze_sentiment_detailed(review)
+print(f"Overall: {analysis.overall} (confidence: {analysis.confidence})")
+print(f"Emotions: {', '.join(analysis.emotions)}")
+print("Aspects:")
+for aspect, sentiment in analysis.aspects.items():
+    print(f"  - {aspect}: {sentiment}")
+
+# Overall: positive (confidence: 0.75)
+# Emotions: satisfaction, frustration, appreciation
+# Aspects:
+#   - camera quality: positive
+#   - battery life: positive
+#   - user interface: negative
+#   - customer service: negative
+```
+
+## Text Transformation
+
+### Capitalization and Formatting
+
+Transform text formatting:
+
+```python
+from OpenHosta import emulate
+
+def capitalize_cities(sentence: str) -> str:
+    """
+    Capitalize the first letter of all city names in a sentence.
+    Leave other words unchanged.
+    """
+    return emulate()
+
+result = capitalize_cities("je suis allé à londres et los angeles en juin")
+print(result)
+# je suis allé à Londres et Los Angeles en juin
+
+def title_case_smart(text: str) -> str:
+    """
+    Convert text to title case, but keep acronyms and proper nouns as they are.
+    """
+    return emulate()
+
+result = title_case_smart("the FBI and CIA work in the USA")
+print(result)
+# The FBI and CIA Work in the USA
+```
+
+### Text Summarization
+
+Create concise summaries:
+
+```python
+from OpenHosta import emulate
+
+def summarize(text: str, max_sentences: int = 3) -> str:
+    """
+    Create a concise summary of the text.
+
+    Args:
+        text: Text to summarize
+        max_sentences: Maximum number of sentences in summary
+
+    Returns:
+        A clear, concise summary
+    """
+    return emulate()
+
+article = """
+Artificial intelligence has revolutionized many industries in recent years.
+From healthcare to finance, AI systems are being deployed to solve complex problems.
+Machine learning algorithms can now diagnose diseases, predict stock market trends,
+and even drive cars autonomously. However, these advances also raise important
+ethical questions about privacy, bias, and the future of work. Researchers and
+policymakers are working together to ensure AI development benefits society as a whole.
+"""
+
+summary = summarize(article, max_sentences=2)
+print(summary)
+# AI has transformed multiple industries including healthcare and finance through
+# machine learning applications. However, this progress raises ethical concerns that
+# researchers and policymakers are addressing.
+```
+
+### Text Expansion
+
+Expand abbreviated or terse text:
+
+```python
+from OpenHosta import emulate
+
+def expand_text(abbreviated: str) -> str:
+    """
+    Expand abbreviated text into full, clear sentences.
+
+    Args:
+        abbreviated: Short, abbreviated text
+
+    Returns:
+        Expanded, complete text
+    """
+    return emulate()
+
+notes = "mtg tmrw 3pm w/ John re: proj deadline. Need to disc budget & timeline."
+
+expanded = expand_text(notes)
+print(expanded)
+# Meeting tomorrow at 3pm with John regarding the project deadline.
+# We need to discuss the budget and timeline.
+```
+
+## Content Moderation
+
+### Profanity Detection
+
+Detect inappropriate content:
+
+```python
+from OpenHosta import emulate
+
+def contains_profanity(text: str) -> bool:
+    """
+    Check if text contains profanity or offensive language.
+
+    Args:
+        text: Text to check
+
+    Returns:
+        True if profanity is detected, False otherwise
+    """
+    return emulate()
+
+texts = [
+    "This is a nice comment.",
+    "You are an idiot!",
+    "Great job on the project!"
+]
+
+for text in texts:
+    is_profane = contains_profanity(text)
+    status = "❌ BLOCKED" if is_profane else "✓ OK"
+    print(f"{status}: {text}")
+
+# ✓ OK: This is a nice comment.
+# ❌ BLOCKED: You are an idiot!
+# ✓ OK: Great job on the project!
+```
+
+### Content Safety Classification
+
+Classify content safety levels:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+
+class SafetyLevel(Enum):
+    SAFE = "safe"
+    CAUTION = "caution"
+    UNSAFE = "unsafe"
+
+class ContentCategory(Enum):
+    VIOLENCE = "violence"
+    HATE_SPEECH = "hate_speech"
+    SEXUAL = "sexual"
+    SELF_HARM = "self_harm"
+    SAFE = "safe"
+
+from pydantic import BaseModel
+from typing import Optional
+
+class SafetyAssessment(BaseModel):
+    level: SafetyLevel
+    category: ContentCategory
+    reason: Optional[str]
+
+def assess_content_safety(text: str) -> SafetyAssessment:
+    """
+    Assess content safety and categorize any issues.
+
+    Args:
+        text: Content to assess
+
+    Returns:
+        Safety assessment with level, category, and reasoning
+    """
+    return emulate()
+
+content = "Tutorial on self-defense techniques for personal safety"
+assessment = assess_content_safety(content)
+print(f"Level: {assessment.level.value}")
+print(f"Category: {assessment.category.value}")
+print(f"Reason: {assessment.reason}")
+
+# Level: safe
+# Category: safe
+# Reason: Educational content about personal safety
+```
+
+## Named Entity Recognition
+
+Extract structured information from text:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List
+
+class Entity(BaseModel):
+    text: str
+    type: str
+    start_pos: int
+
+def extract_entities(text: str) -> List[Entity]:
+    """
+    Extract named entities from text.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        List of entities with their types and positions
+    """
+    return emulate()
+
+text = "Apple CEO Tim Cook announced new products in San Francisco yesterday."
+entities = extract_entities(text)
+
+for entity in entities:
+    print(f"{entity.text} ({entity.type}) at position {entity.start_pos}")
+
+# Apple (ORGANIZATION) at position 0
+# Tim Cook (PERSON) at position 10
+# San Francisco (LOCATION) at position 42
+```
+
+## Keyword Extraction
+
+Extract important keywords from text:
+
+```python
+from OpenHosta import emulate
+from typing import List
+
+def extract_keywords(text: str, max_keywords: int = 5) -> List[str]:
+    """
+    Extract the most important keywords from text.
+
+    Args:
+        text: Text to analyze
+        max_keywords: Maximum number of keywords to extract
+
+    Returns:
+        List of keywords in order of importance
+    """
+    return emulate()
+
+article = """
+Machine learning is a subset of artificial intelligence that enables systems
+to learn and improve from experience. Deep learning, a technique within machine
+learning, uses neural networks to process complex patterns in large datasets.
+"""
+
+keywords = extract_keywords(article, max_keywords=5)
+print("Keywords:", ", ".join(keywords))
+# Keywords: machine learning, artificial intelligence, deep learning, neural networks, datasets
+```
+
+## Text Classification
+
+Categorize text into predefined categories:
+
+```python
+from OpenHosta import emulate
+from enum import Enum
+
+class EmailCategory(Enum):
+    URGENT = "urgent"
+    IMPORTANT = "important"
+    SPAM = "spam"
+    NEWSLETTER = "newsletter"
+    PERSONAL = "personal"
+
+def categorize_email(subject: str, body: str) -> EmailCategory:
+    """
+    Categorize an email based on subject and body.
+
+    Args:
+        subject: Email subject line
+        body: Email body content
+
+    Returns:
+        Email category
+    """
+    return emulate()
+
+emails = [
+    ("URGENT: Server Down", "Production server is not responding..."),
+    ("Weekly Newsletter", "Here are this week's top stories..."),
+    ("Re: Weekend plans", "Hey! Want to grab coffee on Saturday?"),
+]
+
+for subject, body in emails:
+    category = categorize_email(subject, body)
+    print(f"[{category.value.upper()}] {subject}")
+
+# [URGENT] URGENT: Server Down
+# [NEWSLETTER] Weekly Newsletter
+# [PERSONAL] Re: Weekend plans
+```
+
+## Language Detection
+
+Identify the language of text:
+
+```python
+from OpenHosta import emulate
+
+def detect_language(text: str) -> str:
+    """
+    Detect the language of the given text.
+
+    Args:
+        text: Text to analyze
+
+    Returns:
+        ISO language code (e.g., "en", "fr", "es")
+    """
+    return emulate()
+
+texts = [
+    "Hello, how are you today?",
+    "Bonjour, comment allez-vous?",
+    "Hola, ¿cómo estás?",
+    "Guten Tag, wie geht es Ihnen?"
+]
+
+for text in texts:
+    lang = detect_language(text)
+    print(f"[{lang}] {text}")
+
+# [en] Hello, how are you today?
+# [fr] Bonjour, comment allez-vous?
+# [es] Hola, ¿cómo estás?
+# [de] Guten Tag, wie geht es Ihnen?
+```
+
+## Async Text Processing Pipeline
+
+Combine multiple text processing operations efficiently:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from pydantic import BaseModel
+from typing import List
+
+class TextAnalysis(BaseModel):
+    original: str
+    language: str
+    sentiment: str
+    keywords: List[str]
+    summary: str
+
+async def detect_language(text: str) -> str:
+    """Detect text language."""
+    return await emulate()
+
+async def analyze_sentiment(text: str) -> str:
+    """Analyze sentiment (positive/negative/neutral)."""
+    return await emulate()
+
+async def extract_keywords(text: str) -> List[str]:
+    """Extract up to 3 main keywords."""
+    return await emulate()
+
+async def summarize(text: str) -> str:
+    """Create a one-sentence summary."""
+    return await emulate()
+
+async def analyze_text_complete(text: str) -> TextAnalysis:
+    """Run all analyses in parallel."""
+    # Execute all analyses simultaneously
+    language, sentiment, keywords, summary = await asyncio.gather(
+        detect_language(text),
+        analyze_sentiment(text),
+        extract_keywords(text),
+        summarize(text)
+    )
+
+    return TextAnalysis(
+        original=text,
+        language=language,
+        sentiment=sentiment,
+        keywords=keywords,
+        summary=summary
+    )
+
+text = """
+Climate change is one of the most pressing challenges facing humanity.
+Rising temperatures, extreme weather events, and sea level rise threaten
+ecosystems and human societies worldwide.
+"""
+
+analysis = asyncio.run(analyze_text_complete(text))
+print(f"Language: {analysis.language}")
+print(f"Sentiment: {analysis.sentiment}")
+print(f"Keywords: {', '.join(analysis.keywords)}")
+print(f"Summary: {analysis.summary}")
+
+# Language: en
+# Sentiment: neutral
+# Keywords: climate change, rising temperatures, extreme weather
+# Summary: Climate change poses significant threats through temperature rise,
+#          extreme weather, and rising sea levels.
+```
+
+## Best Practices
+
+<Tip>
+**Text Processing Best Practices:**
+
+- **🎯 Clear Instructions** - Provide specific instructions in docstrings
+- **✅ Type Annotations** - Always use type hints for better results
+- **⚡ Use Async for Batch** - Process multiple texts in parallel with async
+- **⚠️ Handle Edge Cases** - Document expected behavior for empty or unusual input
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Data Extraction" icon="database" href="/OpenHostaDocs/examples/data-extraction">
+    Learn to extract structured data from text
+  </Card>
+
+  <Card title="Image Classification" icon="image" href="/OpenHostaDocs/examples/image-classification">
+    Process images with OpenHosta
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Deep dive into asynchronous processing
+  </Card>
+
+  <Card title="Types & Pydantic" icon="shield-check" href="/OpenHostaDocs/advanced/types-pydantic">
+    Master complex return types
+  </Card>
+</CardGroup>

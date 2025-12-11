@@ -1,0 +1,824 @@
+---
+title: "Data Extraction Examples"
+description: "Extract structured data from unstructured text and images using OpenHosta"
+icon: "database"
+---
+
+## Overview
+
+Data extraction is one of OpenHosta's most powerful capabilities. Convert unstructured text or images into structured, typed data that your application can use. This page shows practical examples of extracting information from various sources.
+
+<Note>
+Combine Pydantic models with `emulate()` for type-safe, validated data extraction.
+</Note>
+
+## Email Data Extraction
+
+### Basic Email Information
+
+Extract sender, recipient, and subject from email text:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+
+class EmailInfo(BaseModel):
+    sender: EmailStr
+    recipient: EmailStr
+    subject: str
+
+def extract_email_info(email_text: str) -> EmailInfo:
+    """
+    Extract basic information from email text.
+
+    Args:
+        email_text: Raw email text including headers
+
+    Returns:
+        Structured email information
+    """
+    return emulate()
+
+email = """
+FROM: john.doe@company.com
+TO: jane.smith@example.com
+Subject: Q4 Sales Report
+
+Please find attached the Q4 sales report.
+"""
+
+info = extract_email_info(email)
+print(f"From: {info.sender}")
+print(f"To: {info.recipient}")
+print(f"Subject: {info.subject}")
+
+# From: john.doe@company.com
+# To: jane.smith@example.com
+# Subject: Q4 Sales Report
+```
+
+### Complex Email Parsing
+
+Extract detailed information including attachments and metadata:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+from datetime import datetime
+
+class EmailMetadata(BaseModel):
+    sender: EmailStr
+    recipients: List[EmailStr]
+    cc: List[EmailStr] = []
+    subject: str
+    date: Optional[datetime]
+    attachments: List[str] = []
+    priority: str = "normal"
+
+def parse_email_complete(email_text: str) -> EmailMetadata:
+    """
+    Extract comprehensive email metadata.
+
+    Args:
+        email_text: Complete email with headers and body
+
+    Returns:
+        Detailed email metadata
+    """
+    return emulate()
+
+email = """
+From: alice@techcorp.com
+To: bob@example.com, charlie@example.com
+Cc: david@example.com
+Subject: URGENT: Production Issue
+Date: Mon, 15 Jan 2024 14:30:00 -0500
+Priority: High
+Attachments: error_log.txt, screenshot.png
+
+Production server is experiencing issues.
+"""
+
+metadata = parse_email_complete(email)
+print(f"Sender: {metadata.sender}")
+print(f"Recipients: {', '.join(str(r) for r in metadata.recipients)}")
+print(f"Priority: {metadata.priority}")
+print(f"Attachments: {', '.join(metadata.attachments)}")
+
+# Sender: alice@techcorp.com
+# Recipients: bob@example.com, charlie@example.com
+# Priority: high
+# Attachments: error_log.txt, screenshot.png
+```
+
+## Contact Information Extraction
+
+### Business Card Data
+
+Extract contact details from text:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+
+class ContactInfo(BaseModel):
+    name: str
+    company: Optional[str]
+    title: Optional[str]
+    email: Optional[EmailStr]
+    phone: Optional[str]
+    address: Optional[str]
+
+def extract_contact_info(text: str) -> ContactInfo:
+    """
+    Extract contact information from text.
+
+    Args:
+        text: Text containing contact information
+
+    Returns:
+        Structured contact information
+    """
+    return emulate()
+
+business_card = """
+John Smith
+Senior Software Engineer
+TechCorp Inc.
+Email: j.smith@techcorp.com
+Phone: +1 (555) 123-4567
+123 Tech Street, San Francisco, CA 94102
+"""
+
+contact = extract_contact_info(business_card)
+print(f"Name: {contact.name}")
+print(f"Title: {contact.title}")
+print(f"Company: {contact.company}")
+print(f"Email: {contact.email}")
+print(f"Phone: {contact.phone}")
+
+# Name: John Smith
+# Title: Senior Software Engineer
+# Company: TechCorp Inc.
+# Email: j.smith@techcorp.com
+# Phone: +1 (555) 123-4567
+```
+
+### Multiple Contacts
+
+Extract multiple contacts from a single text:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+
+class Contact(BaseModel):
+    name: str
+    email: Optional[EmailStr]
+    phone: Optional[str]
+
+def extract_contacts(text: str) -> List[Contact]:
+    """
+    Extract all contacts mentioned in text.
+
+    Args:
+        text: Text containing multiple contacts
+
+    Returns:
+        List of contact information
+    """
+    return emulate()
+
+text = """
+Meeting attendees:
+1. Alice Johnson - alice.j@company.com - (555) 111-2222
+2. Bob Williams - bob.w@company.com - (555) 333-4444
+3. Carol Davis - carol.d@company.com
+"""
+
+contacts = extract_contacts(text)
+for contact in contacts:
+    print(f"{contact.name}: {contact.email} {contact.phone or ''}")
+
+# Alice Johnson: alice.j@company.com (555) 111-2222
+# Bob Williams: bob.w@company.com (555) 333-4444
+# Carol Davis: carol.d@company.com
+```
+
+## Invoice and Receipt Processing
+
+### Invoice Data Extraction
+
+Extract structured data from invoices:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List
+from datetime import date
+from decimal import Decimal
+
+class InvoiceItem(BaseModel):
+    description: str
+    quantity: int
+    unit_price: Decimal
+    total: Decimal
+
+class Invoice(BaseModel):
+    invoice_number: str
+    date: date
+    vendor: str
+    items: List[InvoiceItem]
+    subtotal: Decimal
+    tax: Decimal
+    total: Decimal
+
+def extract_invoice(text: str) -> Invoice:
+    """
+    Extract structured invoice data from text.
+
+    Args:
+        text: Invoice text or OCR output
+
+    Returns:
+        Structured invoice data
+    """
+    return emulate()
+
+invoice_text = """
+INVOICE #INV-2024-001
+Date: January 15, 2024
+Vendor: Office Supplies Co.
+
+Items:
+- Printer Paper (5 reams) @ $8.99 each = $44.95
+- Pens (Box of 50) @ $12.50 each = $12.50
+- Folders (Pack of 25) @ $6.99 each = $6.99
+
+Subtotal: $64.44
+Tax (8%): $5.16
+Total: $69.60
+"""
+
+invoice = extract_invoice(invoice_text)
+print(f"Invoice: {invoice.invoice_number}")
+print(f"Vendor: {invoice.vendor}")
+print(f"Date: {invoice.date}")
+print(f"\nItems:")
+for item in invoice.items:
+    print(f"  {item.description}: {item.quantity} × ${item.unit_price} = ${item.total}")
+print(f"\nTotal: ${invoice.total}")
+
+# Invoice: INV-2024-001
+# Vendor: Office Supplies Co.
+# Date: 2024-01-15
+#
+# Items:
+#   Printer Paper: 5 × $8.99 = $44.95
+#   Pens: 1 × $12.50 = $12.50
+#   Folders: 1 × $6.99 = $6.99
+#
+# Total: $69.60
+```
+
+## Customer Data Extraction
+
+### Customer Information from Correspondence
+
+Extract customer details from emails or messages:
+
+```python
+from OpenHosta import emulate
+from dataclasses import dataclass
+
+@dataclass
+class Client:
+    name: str
+    surname: str
+    company: str
+    email: str
+    town: str
+    address: str
+
+def extract_client_info(text: str) -> Client:
+    """
+    Extract client information from correspondence.
+
+    Args:
+        text: Email or message text
+
+    Returns:
+        Structured client information
+    """
+    return emulate()
+
+correspondence = """
+FROM: sebastien@somecorp.com
+TO: shipment@hand-e.fr
+Object: Sample request
+
+Hello bob, I am Sebastian from Paris, France.
+Could you send me a sample of your main product?
+My office address is 3 rue de la république, Lyon 1er
+"""
+
+client = extract_client_info(correspondence)
+print(f"Name: {client.name} {client.surname}")
+print(f"Company: {client.company}")
+print(f"Email: {client.email}")
+print(f"Location: {client.town}")
+print(f"Address: {client.address}")
+
+# Name: Sebastian
+# Company: somecorp.com
+# Email: sebastien@somecorp.com
+# Location: Lyon
+# Address: 3 rue de la république, Lyon 1er
+```
+
+## Form Data Extraction
+
+### Application Form Processing
+
+Extract data from form text or PDFs:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+from typing import Optional
+from datetime import date
+
+class JobApplication(BaseModel):
+    full_name: str
+    email: EmailStr
+    phone: str
+    position: str
+    experience_years: int
+    education: str
+    availability_date: Optional[date]
+    salary_expectation: Optional[str]
+
+def extract_application(text: str) -> JobApplication:
+    """
+    Extract job application data from form text.
+
+    Args:
+        text: Application form text
+
+    Returns:
+        Structured application data
+    """
+    return emulate()
+
+form_text = """
+JOB APPLICATION FORM
+
+Full Name: Jane Doe
+Email: jane.doe@email.com
+Phone: (555) 987-6543
+Position Applied For: Senior Developer
+Years of Experience: 7
+Education: Master's in Computer Science
+Available to Start: March 1, 2024
+Expected Salary: $120,000 - $140,000
+"""
+
+application = extract_application(form_text)
+print(f"Applicant: {application.full_name}")
+print(f"Position: {application.position}")
+print(f"Experience: {application.experience_years} years")
+print(f"Education: {application.education}")
+print(f"Available: {application.availability_date}")
+
+# Applicant: Jane Doe
+# Position: Senior Developer
+# Experience: 7 years
+# Education: Master's in Computer Science
+# Available: 2024-03-01
+```
+
+## Product Information Extraction
+
+### Product Specifications
+
+Extract product details from descriptions:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List, Optional
+from decimal import Decimal
+
+class ProductSpecs(BaseModel):
+    name: str
+    brand: str
+    model: Optional[str]
+    price: Decimal
+    features: List[str]
+    dimensions: Optional[str]
+    weight: Optional[str]
+    color_options: List[str]
+
+def extract_product_specs(description: str) -> ProductSpecs:
+    """
+    Extract product specifications from description text.
+
+    Args:
+        description: Product description text
+
+    Returns:
+        Structured product specifications
+    """
+    return emulate()
+
+product_desc = """
+TechBrand Pro Laptop - Model TB-X1000
+
+Premium ultrabook with cutting-edge technology.
+Price: $1,299.99
+
+Features:
+- 15.6" 4K OLED Display
+- Intel Core i7 Processor
+- 16GB RAM
+- 512GB SSD
+- Backlit Keyboard
+
+Dimensions: 14.1 x 9.3 x 0.7 inches
+Weight: 3.5 lbs
+Available Colors: Silver, Space Gray, Rose Gold
+"""
+
+specs = extract_product_specs(product_desc)
+print(f"Product: {specs.brand} {specs.name}")
+print(f"Model: {specs.model}")
+print(f"Price: ${specs.price}")
+print(f"Features: {len(specs.features)} features")
+print(f"Colors: {', '.join(specs.color_options)}")
+
+# Product: TechBrand Pro Laptop
+# Model: TB-X1000
+# Price: $1299.99
+# Features: 5 features
+# Colors: Silver, Space Gray, Rose Gold
+```
+
+## Event and Meeting Extraction
+
+### Meeting Information
+
+Extract meeting details from messages:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List
+from datetime import datetime
+
+class Meeting(BaseModel):
+    title: str
+    date_time: datetime
+    location: str
+    attendees: List[str]
+    agenda: List[str]
+    duration_minutes: int
+
+def extract_meeting_info(text: str) -> Meeting:
+    """
+    Extract meeting information from text.
+
+    Args:
+        text: Message or email containing meeting details
+
+    Returns:
+        Structured meeting information
+    """
+    return emulate()
+
+message = """
+Meeting: Q1 Planning Session
+
+When: Thursday, January 18, 2024 at 2:00 PM
+Where: Conference Room B (Building 3)
+Duration: 90 minutes
+
+Attendees:
+- Alice Johnson (Marketing)
+- Bob Smith (Sales)
+- Carol Williams (Product)
+
+Agenda:
+1. Review Q4 results
+2. Discuss Q1 goals
+3. Budget allocation
+4. Timeline planning
+"""
+
+meeting = extract_meeting_info(message)
+print(f"Meeting: {meeting.title}")
+print(f"When: {meeting.date_time}")
+print(f"Where: {meeting.location}")
+print(f"Duration: {meeting.duration_minutes} minutes")
+print(f"Attendees: {', '.join(meeting.attendees)}")
+print(f"Agenda Items: {len(meeting.agenda)}")
+
+# Meeting: Q1 Planning Session
+# When: 2024-01-18 14:00:00
+# Where: Conference Room B (Building 3)
+# Duration: 90 minutes
+# Attendees: Alice Johnson, Bob Smith, Carol Williams
+# Agenda Items: 4
+```
+
+## Financial Data Extraction
+
+### Transaction History
+
+Extract financial transactions:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from typing import List
+from datetime import date
+from decimal import Decimal
+
+class Transaction(BaseModel):
+    date: date
+    description: str
+    category: str
+    amount: Decimal
+    type: str  # "debit" or "credit"
+
+def extract_transactions(text: str) -> List[Transaction]:
+    """
+    Extract financial transactions from text.
+
+    Args:
+        text: Transaction history text
+
+    Returns:
+        List of structured transaction data
+    """
+    return emulate()
+
+statement = """
+ACCOUNT STATEMENT - January 2024
+
+01/05 - Grocery Store - Food & Dining - $85.42 (Debit)
+01/07 - Salary Deposit - Income - $3,500.00 (Credit)
+01/10 - Electric Company - Utilities - $120.50 (Debit)
+01/12 - Online Shopping - Shopping - $67.99 (Debit)
+01/15 - Freelance Payment - Income - $500.00 (Credit)
+"""
+
+transactions = extract_transactions(statement)
+for txn in transactions:
+    sign = "+" if txn.type == "credit" else "-"
+    print(f"{txn.date} | {txn.description:25} | {sign}${txn.amount}")
+
+# 2024-01-05 | Grocery Store            | -$85.42
+# 2024-01-07 | Salary Deposit           | +$3500.00
+# 2024-01-10 | Electric Company         | -$120.50
+# 2024-01-12 | Online Shopping          | -$67.99
+# 2024-01-15 | Freelance Payment        | +$500.00
+```
+
+## Resume/CV Parsing
+
+### Candidate Information
+
+Extract structured data from resumes:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+
+class Education(BaseModel):
+    degree: str
+    institution: str
+    year: int
+
+class Experience(BaseModel):
+    title: str
+    company: str
+    years: str
+    responsibilities: List[str]
+
+class Resume(BaseModel):
+    name: str
+    email: EmailStr
+    phone: str
+    summary: str
+    education: List[Education]
+    experience: List[Experience]
+    skills: List[str]
+
+def parse_resume(text: str) -> Resume:
+    """
+    Extract structured information from a resume.
+
+    Args:
+        text: Resume text
+
+    Returns:
+        Structured resume data
+    """
+    return emulate()
+
+resume_text = """
+JOHN DOE
+john.doe@email.com | (555) 123-4567
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 8 years in full-stack development.
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of Technology, 2015
+
+EXPERIENCE
+Senior Software Engineer | TechCorp Inc. | 2020-Present
+- Led development of microservices architecture
+- Mentored junior developers
+- Improved system performance by 40%
+
+Software Engineer | StartupXYZ | 2016-2020
+- Developed RESTful APIs
+- Implemented CI/CD pipelines
+
+SKILLS
+Python, JavaScript, React, Docker, AWS, PostgreSQL
+"""
+
+resume = parse_resume(resume_text)
+print(f"Candidate: {resume.name}")
+print(f"Contact: {resume.email}")
+print(f"Experience: {len(resume.experience)} positions")
+print(f"Skills: {', '.join(resume.skills[:5])}...")
+
+# Candidate: John Doe
+# Contact: john.doe@email.com
+# Experience: 2 positions
+# Skills: Python, JavaScript, React, Docker, AWS...
+```
+
+## Batch Data Extraction
+
+Process multiple documents in parallel:
+
+```python
+import asyncio
+from OpenHosta.asynchrone import emulate
+from pydantic import BaseModel, EmailStr
+from typing import List
+
+class ContactInfo(BaseModel):
+    name: str
+    email: EmailStr
+    company: str
+
+async def extract_contact(text: str) -> ContactInfo:
+    """Extract contact information from text."""
+    return await emulate()
+
+async def process_batch(texts: List[str]) -> List[ContactInfo]:
+    """Process multiple contact texts in parallel."""
+    tasks = [extract_contact(text) for text in texts]
+    return await asyncio.gather(*tasks)
+
+documents = [
+    "Alice Smith, alice@techcorp.com, TechCorp Inc.",
+    "Bob Jones, bob@startup.io, Startup.io",
+    "Carol White, carol@bigco.com, BigCo Ltd."
+]
+
+contacts = asyncio.run(process_batch(documents))
+for contact in contacts:
+    print(f"{contact.name} ({contact.company}): {contact.email}")
+
+# Alice Smith (TechCorp Inc.): alice@techcorp.com
+# Bob Jones (Startup.io): bob@startup.io
+# Carol White (BigCo Ltd.): carol@bigco.com
+```
+
+## Image-Based Data Extraction
+
+Extract data from images (receipts, forms, etc.):
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel
+from PIL import Image
+from typing import List
+from decimal import Decimal
+
+class ReceiptItem(BaseModel):
+    name: str
+    price: Decimal
+
+class Receipt(BaseModel):
+    merchant: str
+    date: str
+    items: List[ReceiptItem]
+    total: Decimal
+
+def extract_receipt_from_image(image: Image.Image) -> Receipt:
+    """
+    Extract receipt data from an image.
+
+    Args:
+        image: Image of a receipt
+
+    Returns:
+        Structured receipt data
+    """
+    return emulate()
+
+# Load receipt image
+img = Image.open("receipt.jpg")
+receipt = extract_receipt_from_image(img)
+
+print(f"Merchant: {receipt.merchant}")
+print(f"Date: {receipt.date}")
+print("\nItems:")
+for item in receipt.items:
+    print(f"  {item.name}: ${item.price}")
+print(f"\nTotal: ${receipt.total}")
+```
+
+## Error Handling
+
+Handle extraction failures gracefully:
+
+```python
+from OpenHosta import emulate
+from pydantic import BaseModel, EmailStr, ValidationError
+from typing import Optional
+
+class Contact(BaseModel):
+    name: str
+    email: Optional[EmailStr]
+
+def extract_contact_safe(text: str) -> Optional[Contact]:
+    """
+    Safely extract contact information, returning None on failure.
+
+    Args:
+        text: Text that may contain contact info
+
+    Returns:
+        Contact info or None if extraction fails
+    """
+    try:
+        return emulate()
+    except (ValidationError, Exception) as e:
+        print(f"Extraction failed: {e}")
+        return None
+
+# This might fail if email is invalid
+result = extract_contact_safe("John Doe - not-an-email")
+if result:
+    print(f"Extracted: {result.name}")
+else:
+    print("Could not extract valid contact information")
+```
+
+## Best Practices
+
+<Tip>
+**Data Extraction Best Practices:**
+
+- **✅ Use Pydantic** - Pydantic models provide automatic validation
+- **🎯 Be Specific** - Clear docstrings improve extraction accuracy
+- **❓ Handle Optional Fields** - Use Optional[] for fields that might be missing
+- **✔️ Validate Output** - Always validate extracted data before using
+</Tip>
+
+<Tip>
+For production use, always validate extracted data and have fallback handling for extraction failures.
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Types & Pydantic" icon="shield-check" href="/OpenHostaDocs/advanced/types-pydantic">
+    Master complex data types
+  </Card>
+
+  <Card title="Text Processing" icon="file-lines" href="/OpenHostaDocs/examples/text-processing">
+    Combine with text processing
+  </Card>
+
+  <Card title="Image Classification" icon="image" href="/OpenHostaDocs/examples/image-classification">
+    Extract from images
+  </Card>
+
+  <Card title="Async Support" icon="bolt" href="/OpenHostaDocs/advanced/async">
+    Process batches efficiently
+  </Card>
+</CardGroup>

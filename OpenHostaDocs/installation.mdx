@@ -1,0 +1,343 @@
+---
+title: "Installation Guide"
+description: "Complete installation guide for OpenHosta with all configuration options"
+icon: "download"
+---
+
+## Prerequisites
+
+<CardGroup cols={2}>
+  <Card title="Python Version" icon="python">
+    Python 3.10, 3.11, 3.12, or 3.13
+  </Card>
+
+  <Card title="Package Manager" icon="box">
+    pip (included with Python) or uv
+  </Card>
+</CardGroup>
+
+Verify your Python installation:
+```bash
+python --version
+pip --version
+```
+
+## Installation Methods
+
+<Tabs>
+  <Tab title="PyPI (Recommended)">
+    Install the latest stable version from PyPI:
+
+    ```bash
+    pip install -U OpenHosta
+    ```
+
+    Verify the installation:
+    ```bash
+    pip show OpenHosta
+    ```
+
+    <Check>
+    This is the simplest method for most users.
+    </Check>
+  </Tab>
+
+  <Tab title="GitHub (Development)">
+    Install directly from GitHub for the latest features:
+
+    ```bash
+    pip install "git+https://github.com/hand-e-fr/OpenHosta.git"
+    ```
+
+    For a specific branch (e.g., unstable):
+    ```bash
+    pip install "git+https://github.com/hand-e-fr/OpenHosta.git@unstable"
+    ```
+
+    Verify the installation:
+    ```bash
+    python -c "import OpenHosta; print(OpenHosta.__version__)"
+    ```
+
+    <Info>
+    Installing from GitHub gives you access to the source code and the ability to contribute.
+    </Info>
+  </Tab>
+</Tabs>
+
+## Virtual Environment (Recommended)
+
+We strongly recommend using a virtual environment to avoid dependency conflicts:
+
+```bash
+# Create a virtual environment
+python -m venv .venv
+
+# Activate it
+source .venv/bin/activate  # On macOS/Linux
+.venv\Scripts\activate     # On Windows
+```
+
+## Optional Dependencies
+
+Unlock additional features with these optional packages:
+
+### Image Processing
+
+Enable image processing features (for PIL.Image support):
+
+```bash
+pip install pillow
+```
+
+<Note>
+Tested with Pillow version 11.0.0
+</Note>
+
+### Pydantic Support
+
+For advanced data validation and models:
+
+```bash
+pip install pydantic
+```
+
+<Note>
+Tested with Pydantic version 2.11.7
+</Note>
+
+### Testing Dependencies
+
+If you want to run OpenHosta's test suite:
+
+```bash
+# Clone the repository first
+git clone https://github.com/hand-e-fr/OpenHosta.git
+cd OpenHosta
+
+# Install with test dependencies
+pip install .[tests]
+```
+
+## Model Configuration
+
+### Cloud API Models
+
+<Tabs>
+  <Tab title="OpenAI">
+    1. Get your API key from [OpenAI Platform](https://platform.openai.com/account/api-keys)
+
+    2. Create a `.env` file in your project root:
+
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="sk-..."
+    ```
+
+    <Tip>
+    OpenHosta automatically loads `.env` files from your working directory or parent directories.
+    </Tip>
+  </Tab>
+
+  <Tab title="Anthropic">
+    1. Get your API key from [Anthropic Console](https://console.anthropic.com/)
+
+    2. Create a `.env` file:
+
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="claude-3-5-sonnet-20241022"
+    OPENHOSTA_DEFAULT_MODEL_BASE_URL="https://api.anthropic.com/v1"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="sk-ant-..."
+    ```
+  </Tab>
+
+  <Tab title="Azure OpenAI">
+    For Microsoft Azure deployments:
+
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4o"
+    OPENHOSTA_DEFAULT_MODEL_BASE_URL="https://YOUR_RESOURCE.openai.azure.com/openai/deployments/YOUR_DEPLOYMENT"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="your-azure-key"
+    ```
+  </Tab>
+</Tabs>
+
+### Local Models with Ollama
+
+<Steps>
+  <Step title="Install Ollama">
+    ```bash
+    # macOS or Linux
+    curl -fsSL https://ollama.com/install.sh | sh
+
+    # Or download from https://ollama.com
+    ```
+  </Step>
+
+  <Step title="Pull a Model">
+    ```bash
+    # Recommended for strong GPUs (32GB+ VRAM)
+    ollama pull mistral-small3.2
+
+    # For limited resources
+    ollama pull gemma3:4b
+    ```
+  </Step>
+
+  <Step title="Configure Environment">
+    Create a `.env` file:
+
+    ```bash .env
+    OPENHOSTA_DEFAULT_MODEL_NAME="mistral-small3.2"
+    OPENHOSTA_DEFAULT_MODEL_BASE_URL="http://localhost:11434/v1"
+    OPENHOSTA_DEFAULT_MODEL_API_KEY="none"
+    ```
+  </Step>
+
+  <Step title="Test the Setup">
+    ```python
+    from OpenHosta import ask
+
+    response = ask("What is your name as a model?")
+    print(response)
+    # Should respond with the model name
+    ```
+  </Step>
+</Steps>
+
+<Tip>
+**Model Recommendations:**
+- **High Performance**: Mistral-Small 3.2 (requires 32GB+ VRAM)
+- **Balanced**: GPT-4.1 or Claude 3.5 Sonnet (via API)
+- **Budget Friendly**: Gemma 3:4b (works on most systems)
+</Tip>
+
+## Environment Variables
+
+You can configure OpenHosta using environment variables:
+
+### Using .env File (Recommended)
+
+```bash .env
+# Model configuration
+OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1"
+OPENHOSTA_DEFAULT_MODEL_BASE_URL="https://api.openai.com/v1"
+OPENHOSTA_DEFAULT_MODEL_API_KEY="your-api-key"
+```
+
+### Using System Variables
+
+<Tabs>
+  <Tab title="macOS/Linux">
+    Add to your `.bashrc` or `.zshrc`:
+
+    ```bash
+    export OPENHOSTA_DEFAULT_MODEL_NAME="gpt-4.1"
+    export OPENHOSTA_DEFAULT_MODEL_API_KEY="your-api-key"
+    ```
+
+    Apply changes:
+    ```bash
+    source ~/.bashrc  # or ~/.zshrc
+    ```
+  </Tab>
+
+  <Tab title="Windows">
+    ```cmd
+    setx OPENHOSTA_DEFAULT_MODEL_NAME "gpt-4.1"
+    setx OPENHOSTA_DEFAULT_MODEL_API_KEY "your-api-key"
+    ```
+  </Tab>
+</Tabs>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="pip install fails" icon="triangle-exclamation">
+    Try these solutions:
+
+    ```bash
+    # Update pip
+    pip install --upgrade pip
+
+    # Use pip3 instead of pip
+    pip3 install OpenHosta
+
+    # On Unix, use sudo if permission errors occur
+    sudo pip install OpenHosta
+
+    # On Windows, run as administrator
+    ```
+  </Accordion>
+
+  <Accordion title="Virtual environment issues" icon="box">
+    Make sure your virtual environment is activated:
+
+    ```bash
+    # You should see (.venv) in your terminal prompt
+    which python  # Should point to .venv/bin/python
+    ```
+  </Accordion>
+
+  <Accordion title="API connection errors" icon="wifi">
+    Check your configuration:
+
+    ```python
+    from OpenHosta import config
+
+    print(f"Model: {config.DefaultModel.model_name}")
+    print(f"Base URL: {config.DefaultModel.base_url}")
+    print(f"API Key: {config.DefaultModel.api_key[:10]}...")
+    ```
+  </Accordion>
+
+  <Accordion title="Reload .env file" icon="rotate">
+    If you changed your `.env` file, reload it without restarting Python:
+
+    ```python
+    from OpenHosta import reload_dotenv
+    reload_dotenv()
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Verify Installation
+
+Run this script to verify everything is working:
+
+```python verify.py
+from OpenHosta import emulate
+
+def add_numbers(a: int, b: int) -> int:
+    """
+    This function returns the sum of two numbers.
+    """
+    return emulate()
+
+result = add_numbers(5, 3)
+print(f"Result: {result}")  # Should print: Result: 8
+```
+
+<Check>
+If you see the correct result, your installation is complete!
+</Check>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/OpenHostaDocs/quickstart">
+    Write your first AI-powered function
+  </Card>
+
+  <Card title="Core Concepts" icon="brain" href="/OpenHostaDocs/core-concepts/emulate">
+    Learn about emulate() and other functions
+  </Card>
+
+  <Card title="Examples" icon="code" href="/OpenHostaDocs/examples/text-processing">
+    Browse code examples
+  </Card>
+
+  <Card title="Advanced Config" icon="gear" href="/OpenHostaDocs/advanced/custom-models">
+    Custom models and configurations
+  </Card>
+</CardGroup>
